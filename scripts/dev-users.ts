@@ -77,6 +77,14 @@ async function main(): Promise<void> {
   for (const seed of DEV_USERS) {
     const userId = await ensureAuthUser(admin, seed.email, seed.password);
     await linkCourseMember(admin, SEED_COURSE_ID, seed.placeholderUserId, userId, seed.role);
+    // The dev author doubles as the platform admin (PRD allows Author ⊇ admin
+    // in dev), so it can manage AI provider keys / the active provider. Seeded
+    // via the service role (bypasses RLS, the same trusted bootstrap path as
+    // course membership above). app_admins has NO client write policy.
+    if (seed.role === 'author') {
+      await ensureAppAdmin(admin, userId);
+      console.log(`dev-users: ${seed.email} added to app_admins`);
+    }
     console.log(`dev-users: ${seed.email} (${seed.role}) -> ${userId}`);
   }
   console.log('dev-users: done. Sign in at /login (password: "password" for both).');
@@ -138,6 +146,14 @@ async function linkCourseMember(
   const { error } = await admin
     .from('course_members')
     .insert({ course_id: courseId, user_id: realUserId, role });
+  if (error) throw error;
+}
+
+/** Idempotently ensures `userId` is a platform admin (app_admins row). */
+async function ensureAppAdmin(admin: SupabaseClient<Database>, userId: string): Promise<void> {
+  const { error } = await admin
+    .from('app_admins')
+    .upsert({ user_id: userId }, { onConflict: 'user_id' });
   if (error) throw error;
 }
 

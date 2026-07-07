@@ -4,6 +4,7 @@ import { AlertCircle, Check, Loader2, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { AiPanel, type ApproveArtifactOutcome } from '@/components/authoring/ai-panel';
 import { BlockInspector } from '@/components/authoring/block-inspector';
 import { PreviewPane } from '@/components/authoring/preview-pane';
 import { SourceEditor } from '@/components/authoring/source-editor';
@@ -13,11 +14,15 @@ import type {
   PreviewActionInput,
   PreviewActionResult,
   PreviewResult,
+  ReloadChapterSourceInput,
+  ReloadChapterSourceResult,
   SaveChapterInput,
   SaveChapterResult,
 } from '@/components/authoring/types';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { approveArtifactAction } from '@/lib/ai/actions';
+import type { AiArtifact } from '@/lib/ai/artifacts';
 import { cn } from '@/lib/utils';
 
 const PREVIEW_DEBOUNCE_MS = 500;
@@ -35,6 +40,12 @@ export interface AuthoringStudioProps {
   onSave: (input: SaveChapterInput) => Promise<SaveChapterResult>;
   /** The `renderChapterPreview` Server Action, passed down from the Server Component page. */
   onPreview: (input: PreviewActionInput) => Promise<PreviewActionResult>;
+  /** The `reloadChapterSource` Server Action — re-reads canonical source after an AI draft is approved. */
+  onReloadSource: (input: ReloadChapterSourceInput) => Promise<ReloadChapterSourceResult>;
+  /** AI drafts + history for this chapter (from the RSC via listArtifacts). */
+  initialArtifacts: AiArtifact[];
+  /** The signed-in user's id — used by the AI panel to label provenance ("나"). */
+  currentUserId: string;
 }
 
 /**
@@ -53,6 +64,9 @@ export function AuthoringStudio({
   initialPreview,
   onSave,
   onPreview,
+  onReloadSource,
+  initialArtifacts,
+  currentUserId,
 }: AuthoringStudioProps) {
   const [source, setSource] = useState(initialSource);
   const [savedSource, setSavedSource] = useState(initialSource);
@@ -100,6 +114,54 @@ export function AuthoringStudio({
       setSaveError(error instanceof Error ? error.message : 'Failed to save. Please try again.');
     }
   }, [onSave, chapter.courseId, chapter.id, chapter.versionId, source, savedSource, isSaving]);
+
+  // --- AI draft approve (insert + refresh editor) ----------------------
+  // Approving inserts the draft's MyST into the SAVED chapter source
+  // server-side (appended, with stable-id markers injected), so afterwards we
+  // must reload that canonical source into the editor buffer — the author sees
+  // the inserted MyST, and the next save won't re-mint ids for the new blocks.
+  //
+  // Guard: block approve while the buffer is dirty. Approve mutates the *saved*
+  // source, then we overwrite the buffer with the reloaded source — that would
+  // silently discard the author's unsaved edits. Make them save first.
+  const handleApprove = useCallback(
+    async (artifactId: string): Promise<ApproveArtifactOutcome> => {
+      if (source !== savedSource) {
+        return {
+          ok: false,
+          error: '저장되지 않은 편집 내용이 있습니다. 승인하기 전에 먼저 저장하세요.',
+        };
+      }
+
+      const result = await approveArtifactAction(artifactId);
+      if (!result.ok) {
+        return { ok: false, error: result.error };
+      }
+
+      // Insert succeeded server-side; pull the canonical (marker-augmented)
+      // source back and adopt it as the new saved baseline.
+      const reload = await onReloadSource({
+        courseId: chapter.courseId,
+        chapterId: chapter.id,
+      });
+      if (!reload.ok) {
+        // The artifact IS approved and inserted — only the editor refresh
+        // failed. Surface it; don't pretend the insert didn't happen.
+        return {
+          ok: true,
+          artifact: result.data,
+          reloadWarning: `편집기를 새로고침하지 못했습니다 (${reload.error}). 페이지를 새로고침하세요.`,
+        };
+      }
+
+      setSource(reload.source);
+      setSavedSource(reload.source);
+      setLastSavedAt(new Date().toISOString());
+      // The debounced preview effect re-renders from the new source on its own.
+      return { ok: true, artifact: result.data };
+    },
+    [source, savedSource, onReloadSource, chapter.courseId, chapter.id],
+  );
 
   // Auto-clear the transient "Saved" pulse back to neutral.
   useEffect(() => {
@@ -222,6 +284,7 @@ export function AuthoringStudio({
               <TabsList>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
                 <TabsTrigger value="blocks">Blocks ({preview.blocks.length})</TabsTrigger>
+                <TabsTrigger value="ai">AI 어시스턴트</TabsTrigger>
               </TabsList>
               {previewStatus === 'loading' && (
                 <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
@@ -240,6 +303,16 @@ export function AuthoringStudio({
             </TabsContent>
             <TabsContent value="blocks" className="mt-0 min-h-0 flex-1 overflow-y-auto">
               <BlockInspector blocks={preview.blocks} />
+            </TabsContent>
+            <TabsContent value="ai" className="mt-0 min-h-0 flex-1 overflow-hidden">
+              <AiPanel
+                chapterId={chapter.id}
+                courseId={chapter.courseId}
+                currentUserId={currentUserId}
+                initialArtifacts={initialArtifacts}
+                sourceDirty={isDirty}
+                onApprove={handleApprove}
+              />
             </TabsContent>
           </Tabs>
         </section>

@@ -80,3 +80,19 @@ export type SaveChapterResult =
       ok: false;
       error: string;
     };
+
+/** Input to the `reloadChapterSource` Server Action (app/authoring/[courseSlug]/[chapterSlug]/actions.ts). */
+export interface ReloadChapterSourceInput {
+  courseId: string;
+  chapterId: string;
+}
+
+/**
+ * Result of re-reading the canonical chapter source from the DB. Used after an
+ * AI draft is approved (which appends its MyST to `chapters.source` server-side,
+ * injecting stable-id markers): the editor buffer must be replaced with this
+ * canonical text so a subsequent save never re-mints ids for the new blocks.
+ */
+export type ReloadChapterSourceResult =
+  | { ok: true; source: string }
+  | { ok: false; error: string };

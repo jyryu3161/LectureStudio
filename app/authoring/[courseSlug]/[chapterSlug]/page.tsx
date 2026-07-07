@@ -5,11 +5,12 @@ import { buildPreview } from '@/app/authoring/_lib/preview';
 import { renderChapterPreview } from '@/app/authoring/preview-action';
 import { AuthoringStudio } from '@/components/authoring/authoring-studio';
 import type { PreviewResult } from '@/components/authoring/types';
+import { listArtifacts, type AiArtifact } from '@/lib/ai/artifacts';
 import { canEditCourse } from '@/lib/auth/guards';
 import { getCourseRole, getCurrentUser } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 
-import { saveChapterSource } from './actions';
+import { reloadChapterSource, saveChapterSource } from './actions';
 
 interface AuthoringChapterPageProps {
   params: Promise<{ courseSlug: string; chapterSlug: string }>;
@@ -90,6 +91,15 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
     };
   }
 
+  // AI drafts + history for this chapter. Never let a listing hiccup take down
+  // the editor — fall back to an empty list (the panel can still generate).
+  let initialArtifacts: AiArtifact[] = [];
+  try {
+    initialArtifacts = await listArtifacts(chapter.id);
+  } catch (error) {
+    console.error('[authoring] failed to list AI artifacts:', error);
+  }
+
   return (
     <AuthoringStudio
       course={{ id: course.id, title: course.title }}
@@ -104,6 +114,9 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
       initialPreview={initialPreview}
       onSave={saveChapterSource}
       onPreview={renderChapterPreview}
+      onReloadSource={reloadChapterSource}
+      initialArtifacts={initialArtifacts}
+      currentUserId={user.id}
     />
   );
 }

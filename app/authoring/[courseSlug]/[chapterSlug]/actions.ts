@@ -1,7 +1,12 @@
 'use server';
 
 import { summarizeBlocks } from '@/app/authoring/_lib/preview';
-import type { SaveChapterInput, SaveChapterResult } from '@/components/authoring/types';
+import type {
+  ReloadChapterSourceInput,
+  ReloadChapterSourceResult,
+  SaveChapterInput,
+  SaveChapterResult,
+} from '@/components/authoring/types';
 import { MAX_CHAPTER_SOURCE_LENGTH } from '@/components/authoring/types';
 import { canEditCourse } from '@/lib/auth/guards';
 import { getCourseRole, getCurrentUser } from '@/lib/auth/session';
@@ -90,6 +95,55 @@ export async function saveChapterSource(input: SaveChapterInput): Promise<SaveCh
     warnings: safeParseWarnings(nextSource),
     savedAt: new Date().toISOString(),
   };
+}
+
+/**
+ * Re-reads the canonical `chapters.source` from the DB, role-gated.
+ *
+ * Used by the Authoring Studio after an AI draft is approved: approving appends
+ * the draft's MyST to the chapter source and injects stable-id markers
+ * server-side (lib/ai/artifacts.approveArtifact). The client cannot reconstruct
+ * that canonical text (it doesn't know the newly minted marker ids), so it must
+ * read it back here and replace its editor buffer with it -- otherwise the next
+ * save would re-mint ids for the appended blocks and desync the block index.
+ *
+ * Never throws: returns `{ ok: false, error }` so the caller can surface it.
+ */
+export async function reloadChapterSource(
+  input: ReloadChapterSourceInput,
+): Promise<ReloadChapterSourceResult> {
+  const { courseId, chapterId } = input;
+
+  if (!courseId || !chapterId) {
+    return { ok: false, error: 'Missing course or chapter id.' };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, error: 'You must be signed in.' };
+  }
+
+  const role = await getCourseRole(courseId);
+  if (!canEditCourse(role)) {
+    return { ok: false, error: 'You do not have permission to view this chapter.' };
+  }
+
+  const supabase = await createClient();
+  const { data: chapter, error } = await supabase
+    .from('chapters')
+    .select('source')
+    .eq('id', chapterId)
+    .eq('course_id', courseId)
+    .maybeSingle();
+
+  if (error) {
+    return { ok: false, error: `Failed to reload chapter source: ${error.message}` };
+  }
+  if (!chapter) {
+    return { ok: false, error: 'Chapter not found (or you cannot access it).' };
+  }
+
+  return { ok: true, source: chapter.source };
 }
 
 /** A second, diagnostics-only parse pass -- must never fail the save itself. */

@@ -205,6 +205,14 @@ assets(id uuid pk, course_id, kind, storage_path, alt_text, caption, metadata js
 - **MVP0 이월**: video/animation 블록 실렌더(stub 해제), 시드에 figure(alt 포함)+video 블록 추가 → 불변식 C 비-공허화.
 - **검증 불변식(Loop 2)**: A′ 미공개 세션 판서가 학생 DOM/REST에 부재 · B′ 뷰포트 리사이즈/reflow 후에도 판서가 자기 블록 bbox 안에 정렬 · C′ 공개/최신 기본/셀렉터 전환 동작 · D′ 블록 수정 시 drift 경고 표시(조용한 렌더 금지) · E′ 저장 실패 시 사용자 표시(네트워크 차단 시뮬레이션) · F′ MVP0 불변식 회귀 유지.
 
+## 8.6 Loop 3 (MVP 2) 확정 설계 — 2026-07-07 착수
+
+- **결정(사용자)**: ① Admin에서 **LLM provider 선택(mock/Anthropic/Gemini) + API 키 입력** UI 제공 — 다양한 모델 사용 가능 구조. ② 당장은 **mock provider**로 파이프라인 전체(draft/승인/provenance) 실구현, 키는 나중에 입력만 하면 동작. ③ Loop 3 통과 후 **Loop 4는 승인 없이 자동 진행**.
+- **DB(0003)**: `app_admins`(플랫폼 관리자) · `ai_settings`(싱글턴: active_provider) · `ai_provider_keys`(provider별 key+model, **RLS: app_admins만**, 클라이언트에 원문 키 절대 미노출·마스킹 표시) · `ai_artifacts`(PRD §9.5: draft|approved|discarded, provenance 필수).
+- **Provider 추상화** `lib/ai`: 공통 인터페이스 + mock(결정론적 MyST 출력) / anthropic(`@anthropic-ai/sdk`, 기본 `claude-opus-4-8`) / gemini(`@google/genai`). 생성은 전부 서버에서만.
+- **AI 기능(PRD §9.3)**: 강의 초안(outline)·학생 설명 보강·강의자 요약·개념 그림 코드·코드 설명·퀴즈 후보 — 6종 draft 생성 → Authoring AI 패널에서 검토 → **승인 시에만** 소스 삽입(기존 블록 stable ID 보존), 폐기 가능.
+- **검증 불변식(Loop 3)**: A3 API 키가 어떤 클라이언트 payload/DOM/REST(비관리자)에도 부재 · B3 draft는 승인 전 콘텐츠·학생 뷰에 절대 미반영 · C3 모든 산출물에 provenance(provider/model/prompt/생성자) + 승인자 기록 · D3 /admin은 비관리자 차단 · E3 mock으로 생성→승인→삽입→학생 렌더 E2E + MVP0/1 회귀.
+
 ## 9. 지금 실행할 것
 1. 본 문서 확정(= Fable 5 계획 산출물)
 2. Loop 1 Workflow 실행: S1 스캐폴드 → Supabase 기동 → S2~S4 병렬 구현 → Fable 5 검증 → (실패 시 수정 ≤3) → 커밋

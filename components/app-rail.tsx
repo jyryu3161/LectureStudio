@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Layers, PenLine, Presentation, User } from 'lucide-react';
+import { BookOpen, PenLine, Presentation, Settings, User } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: '/reading', label: 'Reading Mode', icon: BookOpen, enabled: true },
   { href: '/lecture', label: 'Lecture Mode', icon: Presentation, enabled: true },
   { href: '/authoring', label: 'Authoring Studio', icon: PenLine, enabled: true },
-  { href: '/admin', label: 'Admin Runtime Studio (coming soon)', icon: Layers, enabled: false },
+  { href: '/admin', label: 'Admin', icon: Settings, enabled: true },
 ] as const;
 
 /**

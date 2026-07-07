@@ -34,6 +34,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_artifacts: {
+        Row: {
+          approved_by: string | null
+          artifact_type: string
+          block_id: string | null
+          chapter_id: string | null
+          course_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          model: string | null
+          output: Json
+          prompt: string
+          provider: string
+          source_context: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          artifact_type: string
+          block_id?: string | null
+          chapter_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          model?: string | null
+          output: Json
+          prompt: string
+          provider: string
+          source_context?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          artifact_type?: string
+          block_id?: string | null
+          chapter_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          model?: string | null
+          output?: Json
+          prompt?: string
+          provider?: string
+          source_context?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_artifacts_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_provider_keys: {
+        Row: {
+          api_key: string
+          model: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          model?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          model?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_settings: {
+        Row: {
+          active_provider: string
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          active_provider?: string
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          active_provider?: string
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       annotations: {
         Row: {
           annotation_type: string
@@ -116,6 +217,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      app_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       assets: {
         Row: {
@@ -397,6 +513,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_app_admin: { Args: never; Returns: boolean }
       is_course_member: {
         Args: { p_course_id: string; p_roles?: string[] }
         Returns: boolean

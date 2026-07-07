@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-07-07T14:14:00.910Z",
+  "lastUpdated": "2026-07-07T20:28:29.568Z",
   "activeFeatures": [
     "LectureStudio",
     "supabase",
@@ -22,7 +22,10 @@
     "preview",
     "annotation",
     "annotations",
-    "lecture"
+    "lecture",
+    "ai",
+    "providers",
+    "admin"
   ],
   "primaryFeature": "LectureStudio",
   "features": {
@@ -35,7 +38,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T08:54:04.903Z",
-        "lastUpdated": "2026-07-07T14:13:42.207Z"
+        "lastUpdated": "2026-07-07T15:22:16.160Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/app-rail.tsx"
     },
@@ -74,9 +77,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T08:57:06.541Z",
-        "lastUpdated": "2026-07-07T11:28:21.112Z"
+        "lastUpdated": "2026-07-07T15:26:00.721Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/authoring/authoring-studio.tsx"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/authoring/ai-panel.tsx"
     },
     "ui": {
       "phase": "do",
@@ -126,9 +129,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T09:24:50.737Z",
-        "lastUpdated": "2026-07-07T13:44:59.993Z"
+        "lastUpdated": "2026-07-07T15:06:48.552Z"
       },
-      "lastFile": "/tmp/claude-1000/-home-ubuntu-web-projects-LectureStudio/fe548a73-82a2-4ab8-8485-8f47a7ea1e25/scratchpad/loop2-mvp1.workflow.js"
+      "lastFile": "/tmp/claude-1000/-home-ubuntu-web-projects-LectureStudio/fe548a73-82a2-4ab8-8485-8f47a7ea1e25/scratchpad/loop3-mvp2.workflow.js"
     },
     "auth": {
       "phase": "do",
@@ -191,7 +194,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T10:16:08.984Z",
-        "lastUpdated": "2026-07-07T14:01:59.419Z"
+        "lastUpdated": "2026-07-07T15:14:56.148Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/scripts/dev-users.ts"
     },
@@ -217,9 +220,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T10:52:58.527Z",
-        "lastUpdated": "2026-07-07T10:59:32.327Z"
+        "lastUpdated": "2026-07-07T20:28:29.568Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/blocks/figure.tsx"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/blocks/paragraph.tsx"
     },
     "[chapterSlug]": {
       "phase": "do",
@@ -230,9 +233,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T11:17:15.150Z",
-        "lastUpdated": "2026-07-07T14:10:32.537Z"
+        "lastUpdated": "2026-07-07T15:25:33.831Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/lecture/[courseSlug]/[chapterSlug]/page.tsx"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/authoring/[courseSlug]/[chapterSlug]/page.tsx"
     },
     "_lib": {
       "phase": "do",
@@ -298,6 +301,45 @@
         "lastUpdated": "2026-07-07T14:14:00.910Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/lecture/lecture-stage.tsx"
+    },
+    "ai": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T15:09:21.296Z",
+        "lastUpdated": "2026-07-07T15:15:21.575Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/ai/prompts.test.ts"
+    },
+    "providers": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T15:10:11.687Z",
+        "lastUpdated": "2026-07-07T15:10:57.972Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/ai/providers/gemini.ts"
+    },
+    "admin": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T15:21:27.406Z",
+        "lastUpdated": "2026-07-07T15:22:10.527Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/admin/llm-settings.tsx"
     }
   },
   "pipeline": {
@@ -308,7 +350,7 @@
   "session": {
     "startedAt": "2026-07-07T08:09:04.411Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-07-07T14:14:00.910Z"
+    "lastActivity": "2026-07-07T20:28:29.568Z"
   },
   "history": [
     {
@@ -1406,6 +1448,204 @@
     {
       "timestamp": "2026-07-07T14:14:00.910Z",
       "feature": "lecture",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:06:48.552Z",
+      "feature": "scratchpad",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:09:21.296Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:09:57.142Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:10:11.687Z",
+      "feature": "providers",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:10:44.540Z",
+      "feature": "providers",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:10:57.972Z",
+      "feature": "providers",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:11:05.343Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:12:50.643Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:13:55.497Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:14:26.506Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:14:41.565Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:14:51.679Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:14:56.148Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:15:07.611Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:15:21.575Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:21:27.406Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:22:10.527Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:22:15.094Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:22:16.160Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:23:04.477Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:23:10.041Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:23:20.398Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:24:24.559Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:24:35.638Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:24:42.992Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:24:47.318Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:25:00.813Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:25:06.026Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:25:11.488Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:25:23.954Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:25:33.831Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T15:26:00.721Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T20:28:29.568Z",
+      "feature": "blocks",
       "phase": "do",
       "action": "updated"
     }
