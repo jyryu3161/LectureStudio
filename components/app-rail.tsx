@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { href: '/reading', label: 'Reading Mode', icon: BookOpen, enabled: true },
-  { href: '/lecture', label: 'Lecture Mode (coming soon)', icon: Presentation, enabled: false },
+  { href: '/lecture', label: 'Lecture Mode', icon: Presentation, enabled: true },
   { href: '/authoring', label: 'Authoring Studio', icon: PenLine, enabled: true },
   { href: '/admin', label: 'Admin Runtime Studio (coming soon)', icon: Layers, enabled: false },
 ] as const;

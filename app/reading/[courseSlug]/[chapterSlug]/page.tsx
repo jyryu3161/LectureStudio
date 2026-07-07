@@ -1,5 +1,9 @@
 import { notFound } from 'next/navigation';
 
+import { AnnotationOverlayProvider } from '@/components/reading/annotation-overlay-context';
+import { ReadingAnnotationCanvas } from '@/components/reading/reading-annotation-canvas';
+import { listAnnotations, listPublishedSessions } from '@/lib/annotations';
+import type { AnnotationRow, LectureSessionRow } from '@/lib/annotations/types';
 import { filterByVisibility } from '@/lib/auth/guards';
 import { getCourseRole } from '@/lib/auth/session';
 import { ensureStableIds, type Block } from '@/lib/content';
@@ -80,12 +84,72 @@ function headingDepth(block: Block): number {
   return typeof nodeDepth === 'number' ? nodeDepth : 2;
 }
 
+/** The stroke/text group an annotation belongs to (multi-block strokes share one). */
+function annotationGroupId(annotation: AnnotationRow): string {
+  const data = annotation.data as { group_id?: string };
+  return data.group_id ?? annotation.id;
+}
+
+/**
+ * Computes which annotation *groups* have drifted (PRD §8.7): an annotation is
+ * stale when the block's CURRENT content hash no longer matches the hash the
+ * annotation was drawn against (or the block no longer exists). Grouping means a
+ * multi-block stroke is flagged as a whole. Drift is surfaced as a badge and
+ * dimming in the overlay -- never a silent reposition or hide.
+ */
+function computeStaleGroupIds(annotations: AnnotationRow[], blocks: Block[]): string[] {
+  const currentHash = new Map<string, string>();
+  for (const block of blocks) currentHash.set(block.id, block.contentHash);
+
+  const stale = new Set<string>();
+  for (const a of annotations) {
+    if (!a.created_against_hash) continue; // nothing to compare against
+    const current = currentHash.get(a.block_id);
+    if (current === undefined || current !== a.created_against_hash) {
+      stale.add(annotationGroupId(a));
+    }
+  }
+  return [...stale];
+}
+
+/**
+ * Resolves the session to replay + its annotations for the reading overlay.
+ * Students/guests only ever get PUBLISHED sessions (RLS-enforced in
+ * `listPublishedSessions`/`listAnnotations` via the request-scoped client).
+ * The `?session=` param picks one; an absent/invalid/hidden id falls back to
+ * the most recent published session.
+ */
+async function loadSessionOverlay(
+  chapterId: string,
+  requestedSessionId: string | undefined,
+): Promise<{
+  sessions: LectureSessionRow[];
+  selectedSessionId: string | null;
+  annotations: AnnotationRow[];
+}> {
+  const sessions = await listPublishedSessions(chapterId);
+  if (sessions.length === 0) {
+    return { sessions, selectedSessionId: null, annotations: [] };
+  }
+
+  const requested = requestedSessionId
+    ? sessions.find((s) => s.id === requestedSessionId)
+    : undefined;
+  const selected = requested ?? sessions[0];
+  const annotations = await listAnnotations(selected.id);
+  return { sessions, selectedSessionId: selected.id, annotations };
+}
+
 export default async function ChapterReadingPage({
   params,
+  searchParams,
 }: {
   params: Promise<ChapterPageParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { courseSlug, chapterSlug } = await params;
+  const { session: sessionParam } = await searchParams;
+  const requestedSessionId = Array.isArray(sessionParam) ? sessionParam[0] : sessionParam;
   const data = await loadChapterPageData(courseSlug, chapterSlug);
   if (!data) notFound();
   const { course, chapter, chapters } = data;
@@ -118,11 +182,22 @@ export default async function ChapterReadingPage({
 
   const renderedBlocks = await renderBlocks(blocks, { role });
 
-  return (
-    <div className="flex min-h-full flex-col lg:h-full">
-      <ReadingTopBar courseCode={course.subtitle} courseTitle={course.title} />
+  // Lecture-annotation overlay (PRD §7.3/§8.9). Loaded via the same
+  // request-scoped RLS client -- students/guests only ever receive published
+  // sessions + their annotations. Drift is computed against the freshly parsed
+  // blocks so a changed block flags (not silently moves) its ink.
+  const { sessions, selectedSessionId, annotations } = await loadSessionOverlay(
+    chapter.id,
+    requestedSessionId,
+  );
+  const staleGroupIds = computeStaleGroupIds(annotations, blocks);
 
-      <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
+  return (
+    <AnnotationOverlayProvider defaultVisible>
+      <div className="flex min-h-full flex-col lg:h-full">
+        <ReadingTopBar courseCode={course.subtitle} courseTitle={course.title} />
+
+        <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
         {/* Course TOC -- collapsible on mobile/tablet, persistent rail on desktop. */}
         <nav aria-label="Course chapters" className="border-b border-border-subtle lg:hidden">
           <details>
@@ -148,7 +223,9 @@ export default async function ChapterReadingPage({
             <p className="mb-6 font-mono text-xs uppercase tracking-[0.09em] text-muted">
               Chapter {String(chapter.order_index).padStart(2, '0')} · {chapter.title}
             </p>
-            {renderedBlocks}
+            <ReadingAnnotationCanvas annotations={annotations} staleGroupIds={staleGroupIds}>
+              {renderedBlocks}
+            </ReadingAnnotationCanvas>
           </article>
         </div>
 
@@ -160,7 +237,7 @@ export default async function ChapterReadingPage({
             </summary>
             <div className="flex flex-col gap-6 px-5 pb-6">
               <OnThisPageNav items={headings} />
-              <SessionSelector />
+              <SessionSelector sessions={sessions} selectedSessionId={selectedSessionId} />
               <PersonalNotes chapterId={chapter.id} />
             </div>
           </details>
@@ -170,10 +247,11 @@ export default async function ChapterReadingPage({
           className="hidden shrink-0 lg:flex lg:h-full lg:w-[300px] lg:flex-col lg:gap-7 lg:overflow-y-auto lg:border-l lg:border-border-subtle lg:px-5 lg:py-6"
         >
           <OnThisPageNav items={headings} />
-          <SessionSelector />
+          <SessionSelector sessions={sessions} selectedSessionId={selectedSessionId} />
           <PersonalNotes chapterId={chapter.id} />
         </aside>
+        </div>
       </div>
-    </div>
+    </AnnotationOverlayProvider>
   );
 }

@@ -7,6 +7,7 @@ import {
   INSTRUCTOR_NOTE_NODE,
   LECTURE_SUMMARY_NODE,
   STUDENT_DETAIL_NODE,
+  VIDEO_NODE,
 } from './directives';
 import type { BlockType, BlockVisibility } from './types';
 
@@ -40,6 +41,8 @@ export function blockTypeOf(node: GenericNode): BlockType {
     case EQUATION_NODE:
     case 'math':
       return 'equation';
+    case VIDEO_NODE:
+      return 'video';
     case 'code':
       return 'code';
     case 'image':

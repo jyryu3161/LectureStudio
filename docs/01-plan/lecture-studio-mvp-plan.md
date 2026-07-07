@@ -194,6 +194,17 @@ assets(id uuid pk, course_id, kind, storage_path, alt_text, caption, metadata js
 
 ---
 
+## 8.5 Loop 2 (MVP 1) 확정 설계 — 2026-07-07 착수
+
+- **결정(Open Issue #4)**: annotation은 **커스텀 SVG 레이어** — pointer events로 stroke 캡처 → 블록 bbox로 segment 분할 → 0~1 정규화 좌표 저장 → 블록별 `<svg>` 오버레이 렌더. 의존성 추가 없음.
+- **DB(마이그레이션 0002)**: `lecture_sessions`(status active|ended, published bool) + `annotations`(PRD §8.6 스키마: block_id 앵커, coord_space=block_normalized, created_against_hash, data/style jsonb). RLS: 세션·판서 쓰기=instructor/author/admin, 학생 읽기=**published 세션만**.
+- **Lecture Mode** `/lecture/[course]/[chapter]`: 전체화면 스테이지, 접이식 TOC, 우측 instructor-note 패널, 툴바(펜·형광펜·텍스트·지우개·레이저 / 색 3종 / 전체지우기 / 세션 시작·종료 / 공개 / PDF / 종료). 레이저는 비영속(로컬 표시만).
+- **복원력**: 판서 로컬 버퍼 우선 저장 → 백그라운드 sync(재시도) → 실패 시 명시 표시. PDF fallback = print CSS + `window.print()`(네이티브).
+- **Reading 통합**: 세션 셀렉터 실동작(공개 세션만, 기본=최신), read-only 오버레이, drift 배지.
+- **Drift(§8.8)**: annotation의 created_against_hash ≠ 현재 block hash → "내용 변경됨" 경고 표시 + 유지/폐기 선택. 조용한 렌더/삭제 금지.
+- **MVP0 이월**: video/animation 블록 실렌더(stub 해제), 시드에 figure(alt 포함)+video 블록 추가 → 불변식 C 비-공허화.
+- **검증 불변식(Loop 2)**: A′ 미공개 세션 판서가 학생 DOM/REST에 부재 · B′ 뷰포트 리사이즈/reflow 후에도 판서가 자기 블록 bbox 안에 정렬 · C′ 공개/최신 기본/셀렉터 전환 동작 · D′ 블록 수정 시 drift 경고 표시(조용한 렌더 금지) · E′ 저장 실패 시 사용자 표시(네트워크 차단 시뮬레이션) · F′ MVP0 불변식 회귀 유지.
+
 ## 9. 지금 실행할 것
 1. 본 문서 확정(= Fable 5 계획 산출물)
 2. Loop 1 Workflow 실행: S1 스캐폴드 → Supabase 기동 → S2~S4 병렬 구현 → Fable 5 검증 → (실패 시 수정 ≤3) → 커밋

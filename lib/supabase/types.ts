@@ -34,6 +34,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      annotations: {
+        Row: {
+          annotation_type: string
+          author_id: string | null
+          block_id: string
+          chapter_id: string
+          coord_space: string
+          course_id: string
+          course_version_id: string | null
+          created_against_hash: string | null
+          created_at: string
+          data: Json
+          id: string
+          lecture_session_id: string
+          scope: string
+          style: Json
+          updated_at: string
+        }
+        Insert: {
+          annotation_type: string
+          author_id?: string | null
+          block_id: string
+          chapter_id: string
+          coord_space?: string
+          course_id: string
+          course_version_id?: string | null
+          created_against_hash?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          lecture_session_id: string
+          scope?: string
+          style?: Json
+          updated_at?: string
+        }
+        Update: {
+          annotation_type?: string
+          author_id?: string | null
+          block_id?: string
+          chapter_id?: string
+          coord_space?: string
+          course_id?: string
+          course_version_id?: string | null
+          created_against_hash?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          lecture_session_id?: string
+          scope?: string
+          style?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annotations_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annotations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annotations_course_version_id_fkey"
+            columns: ["course_version_id"]
+            isOneToOne: false
+            referencedRelation: "course_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annotations_lecture_session_id_fkey"
+            columns: ["lecture_session_id"]
+            isOneToOne: false
+            referencedRelation: "lecture_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assets: {
         Row: {
           alt_text: string | null
@@ -254,6 +337,60 @@ export type Database = {
           visibility?: string
         }
         Relationships: []
+      }
+      lecture_sessions: {
+        Row: {
+          chapter_id: string
+          course_id: string
+          created_at: string | null
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          published: boolean
+          started_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          chapter_id: string
+          course_id: string
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          published?: boolean
+          started_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          chapter_id?: string
+          course_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          published?: boolean
+          started_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lecture_sessions_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lecture_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -34,12 +34,14 @@ export const LECTURE_SUMMARY_DIRECTIVE = 'lecture-summary';
 export const STUDENT_DETAIL_DIRECTIVE = 'student-detail';
 export const INSTRUCTOR_NOTE_DIRECTIVE = 'instructor-note';
 export const EQUATION_DIRECTIVE = 'equation';
+export const VIDEO_DIRECTIVE = 'video';
 
 /** AST node `type` values produced by the directives above (see blocks.ts). */
 export const LECTURE_SUMMARY_NODE = 'lectureSummary';
 export const STUDENT_DETAIL_NODE = 'studentDetail';
 export const INSTRUCTOR_NOTE_NODE = 'instructorNote';
 export const EQUATION_NODE = 'equation';
+export const VIDEO_NODE = 'video';
 
 /**
  * Custom directive specs merged into myst-parser's defaults (figure, code,
@@ -52,15 +54,22 @@ export const EQUATION_NODE = 'equation';
  *    to blockType 'equation' in blocks.ts) but the seed content and PRD
  *    §5.4 examples wrap it in `:::equation ... :::`, so we accept that too.
  *
- * `video` / `animation` / `interactive-demo` / `quiz` are stub-only for
- * MVP0 (PRD §4.7) — no authoring syntax yet, so no directive is registered
- * for them. blockTypeOf()'s fallback keeps parsing them gracefully (as
- * `paragraph`) if an unknown directive with one of those names shows up
- * anyway; wiring real directives for them is a small, additive follow-up.
+ *  - `video` registers a real (but still stub-rendered) directive so a
+ *    chapter can author a `:::{video} ... :::` block that classifies as
+ *    blockType 'video' (rendered by the ComingSoonBlock placeholder for
+ *    now, PRD §4.7) instead of failing as an unknown directive. Its body is
+ *    parsed as MyST (caption/label) exactly like the other wrappers.
+ *
+ * `animation` / `interactive-demo` / `quiz` remain stub-only for MVP0 (PRD
+ * §4.7) — no authoring syntax yet, so no directive is registered for them.
+ * blockTypeOf()'s fallback keeps parsing them gracefully (as `paragraph`)
+ * if an unknown directive with one of those names shows up anyway; wiring
+ * real directives for them is a small, additive follow-up.
  */
 export const customDirectives: DirectiveSpec[] = [
   wrapperDirective(LECTURE_SUMMARY_DIRECTIVE, LECTURE_SUMMARY_NODE),
   wrapperDirective(STUDENT_DETAIL_DIRECTIVE, STUDENT_DETAIL_NODE),
   wrapperDirective(INSTRUCTOR_NOTE_DIRECTIVE, INSTRUCTOR_NOTE_NODE),
   wrapperDirective(EQUATION_DIRECTIVE, EQUATION_NODE),
+  wrapperDirective(VIDEO_DIRECTIVE, VIDEO_NODE),
 ];
