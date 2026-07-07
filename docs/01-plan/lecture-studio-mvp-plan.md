@@ -213,6 +213,16 @@ assets(id uuid pk, course_id, kind, storage_path, alt_text, caption, metadata js
 - **AI 기능(PRD §9.3)**: 강의 초안(outline)·학생 설명 보강·강의자 요약·개념 그림 코드·코드 설명·퀴즈 후보 — 6종 draft 생성 → Authoring AI 패널에서 검토 → **승인 시에만** 소스 삽입(기존 블록 stable ID 보존), 폐기 가능.
 - **검증 불변식(Loop 3)**: A3 API 키가 어떤 클라이언트 payload/DOM/REST(비관리자)에도 부재 · B3 draft는 승인 전 콘텐츠·학생 뷰에 절대 미반영 · C3 모든 산출물에 provenance(provider/model/prompt/생성자) + 승인자 기록 · D3 /admin은 비관리자 차단 · E3 mock으로 생성→승인→삽입→학생 렌더 E2E + MVP0/1 회귀.
 
+## 8.7 Loop 4 (MVP 3) 확정 설계 — 2026-07-07 착수 (사용자 사전승인, 자동 진행)
+
+- **결정 #5 (코드 실행 보안 정책, 위임됨)**: MVP3에서 실행 권한은 **author/instructor/admin만** (학생 실행은 정책 재검토 후 후속). 샌드박스: `--network none` · non-root · memory 기본 512m · CPU 제한 · timeout 기본 30s · 임시 작업디렉터리 · **executions 감사 로그 필수**. 이 정책 확정으로 PRD §10.5 전제 충족.
+- **결정 #6 (패키지 매니저, 위임됨)**: PRD 권장대로 **micromamba + environment.yml** → Dockerfile 생성. base `mambaorg/micromamba`.
+- **아키텍처(§13, Supabase 과부하 방지)**: Next는 **엔큐/조회만**. 별도 **worker 프로세스**(Node, docker CLI)가 `runtime_builds`/`executions` 잡을 폴링(FOR UPDATE SKIP LOCKED)해 빌드·실행 후 로그/결과 기록. Realtime 없이 클라이언트 폴링(MVP).
+- **DB(0004)**: `runtimes`(PRD §14.7 스키마) · `runtime_builds`(status/log) · `executions`(block_id, code, status, stdout/stderr, exit_code, duration, 실행자) + RLS(런타임 관리=admin, 실행 생성/조회=elevated+본인, 학생 0행).
+- **실행 가능 블록**: Author가 block inspector에서 code 블록별 `executable` 토글(§5.5 metadata) → Reading에서 elevated 역할에게 Run 버튼 + 인라인 결과(§11.3).
+- **Admin Runtime Studio(§10.4 최소)**: 런타임 목록/생성/편집(python 버전, conda/pip/apt, mem/timeout), Dockerfile 미리보기, 빌드 실행+로그, import test, 활성화.
+- **검증 불변식(Loop 4)**: A4 학생에게 Run 없음+서버 거부+RLS 0행 · B4 실제 docker 빌드 성공+import test · C4 실행 e2e(print(2+2)→'4' 인라인) · D4 timeout 강제(무한루프 kill) · E4 network off(외부 접속 실패) + non-root · F4 감사 로그 기록 · 회귀(MVP0~2).
+
 ## 9. 지금 실행할 것
 1. 본 문서 확정(= Fable 5 계획 산출물)
 2. Loop 1 Workflow 실행: S1 스캐폴드 → Supabase 기동 → S2~S4 병렬 구현 → Fable 5 검증 → (실패 시 수정 ≤3) → 커밋

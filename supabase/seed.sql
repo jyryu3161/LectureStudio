@@ -120,3 +120,20 @@ def merge(left, right):
 길이가 8인 배열을 병합 정렬할 때, 병합(merge) 연산은 총 몇 번 수행되는가?
 $md$
 );
+
+-- ---------------------------------------------------------------------------
+-- Runtime Studio seed (MVP3, 0004_runtime.sql).
+--
+-- One minimal runtime for the seed course: bare python 3.11, no extra conda/
+-- pip/apt packages so its Docker image builds fast. Left as status='draft' --
+-- the Runtime Studio UI (or the worker via queueBuild) turns it into a
+-- 'ready' image; we don't ship a prebuilt image_tag in the seed.
+-- ---------------------------------------------------------------------------
+insert into runtimes (id, course_id, name, python_version, status)
+values (
+  '44444444-4444-4444-4444-444444444444',
+  '11111111-1111-1111-1111-111111111111',
+  'python-basic',
+  '3.11',
+  'draft'
+);

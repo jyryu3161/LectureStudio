@@ -1,5 +1,6 @@
 import type { GenericNode } from 'myst-common';
 
+import { CodeRunner } from '@/components/execution/run-button';
 import { findCaptionNodes, findCodeNode } from '@/lib/render/block-nodes';
 import { renderMystNodes } from '@/lib/render/mdast';
 
@@ -45,6 +46,11 @@ export function CodeBlock({
           {renderMystNodes(captionNodes, `${keyPrefix}-caption`)}
         </div>
       )}
+      {/* Run affordance (PRD §11.3). `keyPrefix` is the block id. The client
+          component self-resolves whether to show anything at all (executable
+          flag + elevated course role + ready runtime), so students see nothing
+          new and non-executable blocks stay unchanged. */}
+      <CodeRunner blockId={keyPrefix} code={codeNode?.value ?? ''} />
     </div>
   );
 }

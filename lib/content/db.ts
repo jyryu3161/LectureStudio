@@ -10,6 +10,15 @@ export interface UpsertBlockIndexResult {
 }
 
 /**
+ * Keys in content_blocks.metadata that are managed out-of-band (set by the
+ * authoring "실행 가능" toggle via updateBlockMeta, NOT derived from source by
+ * deriveBlockMetadata). A chapter re-save rewrites metadata wholesale from the
+ * freshly-parsed blocks, so these must be carried over from the existing row
+ * or the flag would be silently wiped on every save.
+ */
+const PRESERVED_METADATA_KEYS = ['executable'] as const;
+
+/**
  * Write-through for the parsed block index (PRD §5.3/§5.6 data model):
  * upserts every block for one chapter into `content_blocks`, then deletes
  * any row for that chapter whose id is no longer among `blocks` (a block
@@ -39,20 +48,50 @@ export async function upsertBlockIndex(
   versionId: string | null,
   blocks: Block[],
 ): Promise<UpsertBlockIndexResult> {
-  const rows = blocks.map((block) => ({
-    id: block.id,
-    course_id: courseId,
-    chapter_id: chapterId,
-    version_id: versionId,
-    block_type: block.blockType,
-    order_index: block.order,
-    content_hash: block.contentHash,
-    visibility: block.visibility,
-    // Plain, JSON-serializable objects by construction (see blocks.ts) —
-    // safe to hand to a jsonb column.
-    source_range: (block.sourceRange as unknown as Json) ?? null,
-    metadata: block.metadata as unknown as Json,
-  }));
+  // Read the existing rows BEFORE upserting: needed both to preserve
+  // author-managed metadata keys (see PRESERVED_METADATA_KEYS) and to find
+  // stale blocks. Reading before the upsert is equivalent for stale detection
+  // (an upsert only inserts/updates ids we're keeping, never removes any), and
+  // saves a second round-trip.
+  const { data: existingRows, error: selectError } = await supabase
+    .from('content_blocks')
+    .select('id, metadata')
+    .eq('chapter_id', chapterId);
+  if (selectError) {
+    throw new Error(
+      `upsertBlockIndex: failed to read existing blocks for chapter ${chapterId} ` +
+        `(needed to preserve metadata and find stale blocks): ${selectError.message}`,
+    );
+  }
+  const priorMetadataById = new Map<string, Record<string, unknown>>(
+    (existingRows ?? []).map((row) => [row.id, (row.metadata ?? {}) as Record<string, unknown>]),
+  );
+
+  const rows = blocks.map((block) => {
+    // Freshly-parsed metadata is the base; carry over any author-managed keys
+    // from the block's existing row so a re-save never clobbers them.
+    const metadata: Record<string, unknown> = { ...block.metadata };
+    const prior = priorMetadataById.get(block.id);
+    if (prior) {
+      for (const key of PRESERVED_METADATA_KEYS) {
+        if (key in prior) metadata[key] = prior[key];
+      }
+    }
+    return {
+      id: block.id,
+      course_id: courseId,
+      chapter_id: chapterId,
+      version_id: versionId,
+      block_type: block.blockType,
+      order_index: block.order,
+      content_hash: block.contentHash,
+      visibility: block.visibility,
+      // Plain, JSON-serializable objects by construction (see blocks.ts) —
+      // safe to hand to a jsonb column.
+      source_range: (block.sourceRange as unknown as Json) ?? null,
+      metadata: metadata as unknown as Json,
+    };
+  });
 
   if (rows.length > 0) {
     const { error: upsertError } = await supabase
@@ -63,17 +102,6 @@ export async function upsertBlockIndex(
         `upsertBlockIndex: failed to upsert ${rows.length} block(s) for chapter ${chapterId}: ${upsertError.message}`,
       );
     }
-  }
-
-  const { data: existingRows, error: selectError } = await supabase
-    .from('content_blocks')
-    .select('id')
-    .eq('chapter_id', chapterId);
-  if (selectError) {
-    throw new Error(
-      `upsertBlockIndex: upserted ${rows.length} block(s) OK, but failed to read existing blocks for chapter ` +
-        `${chapterId} to find stale ones: ${selectError.message}`,
-    );
   }
 
   const keepIds = new Set(blocks.map((block) => block.id));

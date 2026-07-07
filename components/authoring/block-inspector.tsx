@@ -1,6 +1,7 @@
 import { Lock } from 'lucide-react';
 
 import type { BlockSummary } from '@/components/authoring/types';
+import { ExecutableToggle } from '@/components/execution/executable-toggle';
 import { cn } from '@/lib/utils';
 import type { BlockType } from '@/lib/content';
 
@@ -66,6 +67,7 @@ export function BlockInspector({ blocks }: { blocks: BlockSummary[] }) {
               <span className="truncate font-mono text-[10px] text-muted-foreground">{block.id}</span>
             </div>
             {block.preview && <p className="mt-1.5 truncate text-sm text-ink/80">{block.preview}</p>}
+            {block.blockType === 'code' && <ExecutableToggle blockId={block.id} />}
           </div>
         </li>
       ))}

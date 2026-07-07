@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { LlmSettings, type ProviderCard } from '@/components/admin/llm-settings';
@@ -63,11 +64,24 @@ export default async function AdminPage() {
   const activeCard = cards.find((c) => c.id === settings.activeProvider) ?? cards[0];
 
   return (
-    <LlmSettings
-      cards={cards}
-      activeProvider={settings.activeProvider}
-      activeLabel={activeCard.label}
-      activeModel={activeCard.selectedModel}
-    />
+    <div>
+      <nav className="mx-auto flex max-w-3xl items-center gap-4 px-6 pt-8 sm:px-10">
+        <span className="font-mono text-xs uppercase tracking-[0.14em] text-accent">
+          LLM 설정
+        </span>
+        <Link
+          href="/admin/runtimes"
+          className="font-mono text-xs uppercase tracking-[0.14em] text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          런타임 스튜디오
+        </Link>
+      </nav>
+      <LlmSettings
+        cards={cards}
+        activeProvider={settings.activeProvider}
+        activeLabel={activeCard.label}
+        activeModel={activeCard.selectedModel}
+      />
+    </div>
   );
 }

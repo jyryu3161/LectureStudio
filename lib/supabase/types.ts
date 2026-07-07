@@ -454,6 +454,65 @@ export type Database = {
         }
         Relationships: []
       }
+      executions: {
+        Row: {
+          block_id: string | null
+          chapter_id: string | null
+          code: string
+          course_id: string | null
+          created_at: string
+          duration_ms: number | null
+          executed_by: string
+          exit_code: number | null
+          finished_at: string | null
+          id: string
+          runtime_id: string | null
+          status: string
+          stderr: string
+          stdout: string
+        }
+        Insert: {
+          block_id?: string | null
+          chapter_id?: string | null
+          code: string
+          course_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          executed_by: string
+          exit_code?: number | null
+          finished_at?: string | null
+          id?: string
+          runtime_id?: string | null
+          status?: string
+          stderr?: string
+          stdout?: string
+        }
+        Update: {
+          block_id?: string | null
+          chapter_id?: string | null
+          code?: string
+          course_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          executed_by?: string
+          exit_code?: number | null
+          finished_at?: string | null
+          id?: string
+          runtime_id?: string | null
+          status?: string
+          stderr?: string
+          stdout?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executions_runtime_id_fkey"
+            columns: ["runtime_id"]
+            isOneToOne: false
+            referencedRelation: "runtimes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lecture_sessions: {
         Row: {
           chapter_id: string
@@ -508,11 +567,161 @@ export type Database = {
           },
         ]
       }
+      runtime_builds: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          image_tag: string | null
+          log: string
+          runtime_id: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          image_tag?: string | null
+          log?: string
+          runtime_id?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          image_tag?: string | null
+          log?: string
+          runtime_id?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_builds_runtime_id_fkey"
+            columns: ["runtime_id"]
+            isOneToOne: false
+            referencedRelation: "runtimes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runtimes: {
+        Row: {
+          apt_packages: Json
+          base_image: string
+          conda_packages: Json
+          course_id: string | null
+          created_at: string
+          dockerfile: string | null
+          gpu_enabled: boolean
+          id: string
+          image_tag: string | null
+          memory_limit: string
+          name: string
+          pip_packages: Json
+          python_version: string
+          status: string
+          timeout_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          apt_packages?: Json
+          base_image?: string
+          conda_packages?: Json
+          course_id?: string | null
+          created_at?: string
+          dockerfile?: string | null
+          gpu_enabled?: boolean
+          id?: string
+          image_tag?: string | null
+          memory_limit?: string
+          name: string
+          pip_packages?: Json
+          python_version?: string
+          status?: string
+          timeout_seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          apt_packages?: Json
+          base_image?: string
+          conda_packages?: Json
+          course_id?: string | null
+          created_at?: string
+          dockerfile?: string | null
+          gpu_enabled?: boolean
+          id?: string
+          image_tag?: string | null
+          memory_limit?: string
+          name?: string
+          pip_packages?: Json
+          python_version?: string
+          status?: string
+          timeout_seconds?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtimes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      claim_execution: {
+        Args: never
+        Returns: {
+          block_id: string | null
+          chapter_id: string | null
+          code: string
+          course_id: string | null
+          created_at: string
+          duration_ms: number | null
+          executed_by: string
+          exit_code: number | null
+          finished_at: string | null
+          id: string
+          runtime_id: string | null
+          status: string
+          stderr: string
+          stdout: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "executions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_runtime_build: {
+        Args: never
+        Returns: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          image_tag: string | null
+          log: string
+          runtime_id: string | null
+          started_at: string | null
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "runtime_builds"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_app_admin: { Args: never; Returns: boolean }
       is_course_member: {
         Args: { p_course_id: string; p_roles?: string[] }
