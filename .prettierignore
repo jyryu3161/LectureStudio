@@ -1,0 +1,16 @@
+# Pre-existing project docs/assets this app must not reformat or overwrite.
+/README.md
+docs/
+ref/
+.bkit/
+
+# Generated / vendored — never hand-format.
+node_modules/
+.next/
+package-lock.json
+supabase/.temp/
+supabase/.branches/
+
+# Prettier has no SQL parser installed; explicit-globbing these errors
+# otherwise ("No parser could be inferred").
+supabase/**/*.sql

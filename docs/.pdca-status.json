@@ -1,0 +1,1017 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-07-07T13:11:57.910Z",
+  "activeFeatures": [
+    "LectureStudio",
+    "supabase",
+    "reading",
+    "authoring",
+    "ui",
+    "tests",
+    "e2e",
+    "scratchpad",
+    "auth",
+    "login",
+    "dev-login",
+    "content",
+    "scripts",
+    "render",
+    "blocks",
+    "[chapterSlug]",
+    "_lib",
+    "preview"
+  ],
+  "primaryFeature": "LectureStudio",
+  "features": {
+    "LectureStudio": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T08:54:04.903Z",
+        "lastUpdated": "2026-07-07T09:56:39.574Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/middleware.ts"
+    },
+    "supabase": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T08:56:29.698Z",
+        "lastUpdated": "2026-07-07T09:55:51.450Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/supabase/roles.ts"
+    },
+    "reading": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T08:57:06.292Z",
+        "lastUpdated": "2026-07-07T11:18:55.059Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/reading/not-found.tsx"
+    },
+    "authoring": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T08:57:06.541Z",
+        "lastUpdated": "2026-07-07T11:28:21.112Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/authoring/authoring-studio.tsx"
+    },
+    "ui": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T08:58:26.237Z",
+        "lastUpdated": "2026-07-07T08:59:08.365Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/ui/tooltip.tsx"
+    },
+    "tests": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:00:25.377Z",
+        "lastUpdated": "2026-07-07T09:00:25.377Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/smoke.test.ts"
+    },
+    "e2e": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:00:26.729Z",
+        "lastUpdated": "2026-07-07T09:00:26.729Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/e2e/smoke.spec.ts"
+    },
+    "scratchpad": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:24:50.737Z",
+        "lastUpdated": "2026-07-07T13:11:57.910Z"
+      },
+      "lastFile": "/tmp/claude-1000/-home-ubuntu-web-projects-LectureStudio/fe548a73-82a2-4ab8-8485-8f47a7ea1e25/scratchpad/loop1-verify.workflow.js"
+    },
+    "auth": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:56:00.425Z",
+        "lastUpdated": "2026-07-07T09:56:21.899Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/auth/actions.ts"
+    },
+    "login": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:56:54.657Z",
+        "lastUpdated": "2026-07-07T09:56:54.657Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/(auth)/login/page.tsx"
+    },
+    "dev-login": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T09:57:13.868Z",
+        "lastUpdated": "2026-07-07T10:09:26.502Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/(auth)/dev-login/route.ts"
+    },
+    "content": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T10:12:45.055Z",
+        "lastUpdated": "2026-07-07T10:27:15.624Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/content/stable-ids.test.ts"
+    },
+    "scripts": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T10:16:08.984Z",
+        "lastUpdated": "2026-07-07T10:25:59.246Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/scripts/ingest-seed.ts"
+    },
+    "render": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T10:51:53.082Z",
+        "lastUpdated": "2026-07-07T10:57:34.257Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/render/render-blocks.integration.test.ts"
+    },
+    "blocks": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T10:52:58.527Z",
+        "lastUpdated": "2026-07-07T10:59:32.327Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/blocks/figure.tsx"
+    },
+    "[chapterSlug]": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T11:17:15.150Z",
+        "lastUpdated": "2026-07-07T11:27:16.505Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/authoring/[courseSlug]/[chapterSlug]/page.tsx"
+    },
+    "_lib": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T11:19:32.087Z",
+        "lastUpdated": "2026-07-07T11:26:35.305Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/authoring/_lib/preview.ts"
+    },
+    "preview": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-07T11:19:57.826Z",
+        "lastUpdated": "2026-07-07T11:19:57.826Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/authoring/preview/route.ts"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-07-07T08:09:04.411Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-07-07T13:11:57.910Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-07-07T08:54:04.903Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:54:25.139Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:54:38.797Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:29.698Z",
+      "feature": "supabase",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:31.498Z",
+      "feature": "supabase",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:35.104Z",
+      "feature": "supabase",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:49.280Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:52.568Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:56:59.472Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:57:06.292Z",
+      "feature": "reading",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:57:06.541Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:58:26.237Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:58:36.053Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:58:55.715Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:59:01.138Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:59:04.754Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T08:59:08.365Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:00:21.326Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:00:21.690Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:00:23.871Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:00:25.377Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:00:26.729Z",
+      "feature": "e2e",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:08:14.584Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:24:50.737Z",
+      "feature": "scratchpad",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:46:30.022Z",
+      "feature": "scratchpad",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:55:51.450Z",
+      "feature": "supabase",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:56:00.425Z",
+      "feature": "auth",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:56:13.218Z",
+      "feature": "auth",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:56:21.899Z",
+      "feature": "auth",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:56:39.574Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:56:54.657Z",
+      "feature": "login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T09:57:13.868Z",
+      "feature": "dev-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:01:16.586Z",
+      "feature": "dev-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:09:15.008Z",
+      "feature": "dev-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:09:21.755Z",
+      "feature": "dev-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:09:26.502Z",
+      "feature": "dev-login",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:12:45.055Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:12:50.110Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:12:54.456Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:13:10.351Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:13:22.612Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:13:36.813Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:13:53.837Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:14:08.885Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:14:26.104Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:14:49.949Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:15:44.423Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:15:52.330Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:16:08.984Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:16:46.686Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:16:59.717Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:17:13.731Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:17:24.329Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:17:36.903Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:18:05.373Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:20:03.853Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:20:09.469Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:20:26.627Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:20:46.954Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:24:56.313Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:25:31.510Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:25:38.821Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:25:59.246Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:27:15.624Z",
+      "feature": "content",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:51:53.082Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:52:05.572Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:52:17.507Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:52:29.819Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:52:50.042Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:52:58.527Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:06.086Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:11.908Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:18.994Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:25.792Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:36.074Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:46.104Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:53:57.499Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:08.620Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:18.038Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:25.945Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:35.907Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:44.944Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:54:58.582Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:55:05.556Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:55:25.482Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:56:48.584Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:57:34.257Z",
+      "feature": "render",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T10:59:32.327Z",
+      "feature": "blocks",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:17:15.150Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:17:25.289Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:17:37.194Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:17:48.397Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:17:57.738Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:18:07.977Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:18:36.515Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:18:46.736Z",
+      "feature": "reading",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:18:55.059Z",
+      "feature": "reading",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:19:05.781Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:19:25.628Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:19:32.087Z",
+      "feature": "_lib",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:19:45.931Z",
+      "feature": "_lib",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:19:57.826Z",
+      "feature": "preview",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:20:19.400Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:20:32.334Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:20:43.609Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:20:50.776Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:21:03.288Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:21:36.941Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:21:54.584Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:22:09.529Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:22:17.372Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:22:25.285Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:26:16.184Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:26:35.305Z",
+      "feature": "_lib",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:26:50.324Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:05.265Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:11.399Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:16.505Z",
+      "feature": "[chapterSlug]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:34.226Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:51.885Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:27:56.896Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:28:09.094Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T11:28:21.112Z",
+      "feature": "authoring",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-07T13:11:57.910Z",
+      "feature": "scratchpad",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
+}

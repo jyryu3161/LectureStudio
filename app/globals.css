@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design tokens — see ref/design.zip mockups */
+    --font-sans: 'Instrument Sans', system-ui, sans-serif;
+    --font-serif: 'Source Serif 4', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --color-rail: #16181c;
+    --color-canvas: #ececea;
+    --color-paper: #fbfbfa;
+    --color-ink: #16181c;
+    --color-accent: #43507e;
+    --color-accent-hover: #2a3358;
+    --color-selection: #dfe2f0;
+    --color-border: #e6e6e1;
+    --color-muted: #5c6069;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  ::selection {
+    background: var(--color-selection);
+  }
+}
