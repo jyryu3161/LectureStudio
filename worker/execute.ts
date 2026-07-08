@@ -13,6 +13,7 @@
 import { dockerKill, dockerRemove, spawnCapture } from './docker';
 import type { WorkerClient } from './supabase';
 import { OUTPUT_CAP_BYTES } from '../lib/runtime/types';
+import { resolveJobLimits, type WorkerTuning } from '../lib/runtime-tuning';
 
 interface ClaimedExecution {
   id: string;
@@ -23,6 +24,7 @@ interface ClaimedExecution {
 export async function processExecution(
   supabase: WorkerClient,
   execution: ClaimedExecution,
+  tuning: WorkerTuning,
 ): Promise<void> {
   const execId = execution.id;
   const start = Date.now();
@@ -44,8 +46,10 @@ export async function processExecution(
       throw new Error('runtime is not ready (no image to run)');
     }
 
-    const memory = runtime.memory_limit || '512m';
-    const timeoutSeconds = runtime.timeout_seconds || 30;
+    // Per-job limits with full precedence: env override > per-runtime row >
+    // host-aware auto-tuned default. Only the NUMBERS are host-aware; every
+    // sandbox security flag below stays fixed.
+    const { memory, cpus, timeoutSeconds } = resolveJobLimits(tuning, process.env, runtime);
 
     const args = [
       'run',
@@ -59,7 +63,7 @@ export async function processExecution(
       '--memory-swap',
       memory,
       '--cpus',
-      '1',
+      cpus,
       '--pids-limit',
       '256',
       '-i',

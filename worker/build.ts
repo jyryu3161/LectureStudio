@@ -18,6 +18,7 @@ import { generateDockerfile, packageImportName } from '../lib/runtime/dockerfile
 
 import { spawnCapture } from './docker';
 import type { WorkerClient } from './supabase';
+import type { WorkerTuning } from '../lib/runtime-tuning';
 
 interface ClaimedBuild {
   id: string;
@@ -31,6 +32,7 @@ const IMPORT_TEST_TIMEOUT_MS = 60 * 1000;
 export async function processBuild(
   supabase: WorkerClient,
   build: ClaimedBuild,
+  tuning: WorkerTuning,
 ): Promise<void> {
   const buildId = build.id;
   let log = '';
@@ -102,11 +104,35 @@ export async function processBuild(
 
     // Import smoke test: python + one import per declared package.
     const importNames = [...conda, ...pip].map(packageImportName);
-    const checkLines = ['import sys', 'print(sys.version)', ...importNames.map((n) => `import ${n}`)];
+    const checkLines = [
+      'import sys',
+      'print(sys.version)',
+      ...importNames.map((n) => `import ${n}`),
+    ];
     log += `# --- import test (${importNames.length} package(s)) ---\n`;
+    // The smoke test runs freshly-built code; bound it with the host-aware
+    // per-job memory/cpu (security flags --network none/--rm stay fixed).
+    const jobMem = `${tuning.defaultJobMemMB}m`;
     const test_res = await spawnCapture(
       'docker',
-      ['run', '--rm', '--network', 'none', imageTag, 'python', '-c', checkLines.join('\n')],
+      [
+        'run',
+        '--rm',
+        '--network',
+        'none',
+        '--memory',
+        jobMem,
+        '--memory-swap',
+        jobMem,
+        '--cpus',
+        String(tuning.defaultCpus),
+        '--pids-limit',
+        '256',
+        imageTag,
+        'python',
+        '-c',
+        checkLines.join('\n'),
+      ],
       { timeoutMs: IMPORT_TEST_TIMEOUT_MS },
     );
     log += test_res.stdout + test_res.stderr + `\n# import test exited ${test_res.code}\n`;

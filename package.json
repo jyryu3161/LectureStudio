@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "worker": "jiti worker/index.ts",
+    "tuning": "jiti scripts/print-tuning.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

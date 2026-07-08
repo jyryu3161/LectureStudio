@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-07-08T08:59:04.010Z",
+  "lastUpdated": "2026-07-08T12:39:25.177Z",
   "activeFeatures": [
     "LectureStudio",
     "supabase",
@@ -49,9 +49,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T08:54:04.903Z",
-        "lastUpdated": "2026-07-08T08:16:07.781Z"
+        "lastUpdated": "2026-07-08T12:35:08.486Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/_cleanup_chapter.ts"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/runtime-tuning.ts"
     },
     "supabase": {
       "phase": "do",
@@ -114,9 +114,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T09:00:25.377Z",
-        "lastUpdated": "2026-07-07T09:00:25.377Z"
+        "lastUpdated": "2026-07-08T12:38:14.316Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/smoke.test.ts"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/sysinfo.test.ts"
     },
     "e2e": {
       "phase": "do",
@@ -205,9 +205,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T10:16:08.984Z",
-        "lastUpdated": "2026-07-07T15:14:56.148Z"
+        "lastUpdated": "2026-07-08T12:39:25.177Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/scripts/dev-users.ts"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/scripts/install.sh"
     },
     "render": {
       "phase": "do",
@@ -374,7 +374,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T20:53:44.512Z",
-        "lastUpdated": "2026-07-07T22:40:25.014Z"
+        "lastUpdated": "2026-07-08T12:36:57.837Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/worker/index.ts"
     },
@@ -504,7 +504,7 @@
   "session": {
     "startedAt": "2026-07-07T08:09:04.411Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-07-08T08:59:04.010Z"
+    "lastActivity": "2026-07-08T12:39:25.177Z"
   },
   "history": [
     {
@@ -3060,6 +3060,66 @@
     {
       "timestamp": "2026-07-08T08:59:04.010Z",
       "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:34:21.340Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:35:08.486Z",
+      "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:35:25.152Z",
+      "feature": "worker",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:35:33.102Z",
+      "feature": "worker",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:36:16.886Z",
+      "feature": "worker",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:36:39.251Z",
+      "feature": "worker",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:36:57.837Z",
+      "feature": "worker",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:37:17.641Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:38:14.316Z",
+      "feature": "tests",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T12:39:25.177Z",
+      "feature": "scripts",
       "phase": "do",
       "action": "updated"
     }
