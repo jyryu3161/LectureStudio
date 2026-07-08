@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-07-08T08:16:07.781Z",
+  "lastUpdated": "2026-07-08T08:59:04.010Z",
   "activeFeatures": [
     "LectureStudio",
     "supabase",
@@ -35,7 +35,8 @@
     "export",
     "epub",
     "[[...path]]",
-    "chapters"
+    "chapters",
+    "courses"
   ],
   "primaryFeature": "LectureStudio",
   "features": {
@@ -139,9 +140,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T09:24:50.737Z",
-        "lastUpdated": "2026-07-08T08:07:27.699Z"
+        "lastUpdated": "2026-07-08T08:48:46.000Z"
       },
-      "lastFile": "/tmp/claude-1000/-home-ubuntu-web-projects-LectureStudio/fe548a73-82a2-4ab8-8485-8f47a7ea1e25/scratchpad/envshim.js"
+      "lastFile": "/tmp/claude-1000/-home-ubuntu-web-projects-LectureStudio/fe548a73-82a2-4ab8-8485-8f47a7ea1e25/scratchpad/loop6-postmvp.workflow.js"
     },
     "auth": {
       "phase": "do",
@@ -152,9 +153,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T09:56:00.425Z",
-        "lastUpdated": "2026-07-07T09:56:21.899Z"
+        "lastUpdated": "2026-07-08T08:52:04.018Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/auth/actions.ts"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/auth/guards.ts"
     },
     "login": {
       "phase": "do",
@@ -347,7 +348,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T15:21:27.406Z",
-        "lastUpdated": "2026-07-07T21:06:27.220Z"
+        "lastUpdated": "2026-07-08T08:58:35.258Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/app/admin/page.tsx"
     },
@@ -360,9 +361,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T20:50:32.395Z",
-        "lastUpdated": "2026-07-07T20:55:44.349Z"
+        "lastUpdated": "2026-07-08T08:52:28.063Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/runtime/dockerfile.test.ts"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/runtime/db.ts"
     },
     "worker": {
       "phase": "do",
@@ -412,9 +413,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-07-07T21:07:54.977Z",
-        "lastUpdated": "2026-07-07T21:14:37.271Z"
+        "lastUpdated": "2026-07-08T08:54:06.704Z"
       },
-      "lastFile": "/home/ubuntu/web_projects/LectureStudio/components/execution/run-button.tsx"
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/execution/gate.test.ts"
     },
     "demos": {
       "phase": "do",
@@ -480,6 +481,19 @@
         "lastUpdated": "2026-07-08T05:16:17.384Z"
       },
       "lastFile": "/home/ubuntu/web_projects/LectureStudio/lib/chapters/source.ts"
+    },
+    "courses": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-07-08T08:55:57.610Z",
+        "lastUpdated": "2026-07-08T08:59:04.010Z"
+      },
+      "lastFile": "/home/ubuntu/web_projects/LectureStudio/tests/courses/duplicate.test.ts"
     }
   },
   "pipeline": {
@@ -490,7 +504,7 @@
   "session": {
     "startedAt": "2026-07-07T08:09:04.411Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-07-08T08:16:07.781Z"
+    "lastActivity": "2026-07-08T08:59:04.010Z"
   },
   "history": [
     {
@@ -2908,6 +2922,144 @@
     {
       "timestamp": "2026-07-08T08:16:07.781Z",
       "feature": "LectureStudio",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:48:46.000Z",
+      "feature": "scratchpad",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:04.018Z",
+      "feature": "auth",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:11.539Z",
+      "feature": "runtime",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:16.565Z",
+      "feature": "runtime",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:28.063Z",
+      "feature": "runtime",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:37.256Z",
+      "feature": "execution",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:43.626Z",
+      "feature": "execution",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:52:57.702Z",
+      "feature": "execution",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:53:16.769Z",
+      "feature": "execution",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:53:21.638Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:53:28.117Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:53:32.455Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:54:06.704Z",
+      "feature": "execution",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:55:57.610Z",
+      "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:56:50.763Z",
+      "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:57:00.706Z",
+      "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:57:05.695Z",
+      "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:57:49.590Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:58:16.560Z",
+      "feature": "courses",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:58:26.476Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:58:31.834Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:58:35.258Z",
+      "feature": "admin",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-07-08T08:59:04.010Z",
+      "feature": "courses",
       "phase": "do",
       "action": "updated"
     }

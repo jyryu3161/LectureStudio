@@ -18,14 +18,13 @@
  * lib/content/db.ts's upsertBlockIndex explicitly preserves the `executable`
  * key across saves (see PRESERVED_METADATA_KEYS there).
  */
+import { canRunCode, canToggleStudentExecution } from '@/lib/auth/guards';
 import { getCurrentUser, getCourseRole } from '@/lib/auth/session';
 import type { CourseRole } from '@/lib/supabase/roles';
 import { createClient } from '@/lib/supabase/server';
 
 import type { ActionResult, BlockMetaState, RunContext } from './types';
 
-/** Roles that may RUN code / see the Run affordance (PRD §10.5; mirrors executions_insert RLS). */
-const RUN_ROLES: readonly CourseRole[] = ['author', 'instructor', 'admin'];
 /** Roles that may TOGGLE executability (mirrors content_blocks_write RLS: author/admin only). */
 const AUTHORING_ROLES: readonly CourseRole[] = ['author', 'admin'];
 
@@ -66,7 +65,21 @@ export async function resolveRunContextAction(blockId: string): Promise<RunConte
     if (!courseId || !chapterId) return { runnable: false };
 
     const role = await getCourseRole(courseId);
-    if (!hasRole(role, RUN_ROLES)) return { runnable: false };
+    // Students only see the Run affordance when their course has opted in; the
+    // course flag is only fetched (and only matters) for the student path.
+    let studentExecutionEnabled = false;
+    if (role === 'student') {
+      const { data: course } = await supabase
+        .from('courses')
+        .select('student_execution_enabled')
+        .eq('id', courseId)
+        .maybeSingle();
+      studentExecutionEnabled = course?.student_execution_enabled === true;
+    }
+    // metadata.executable was already verified === true above.
+    if (!canRunCode({ role, blockExecutable: true, studentExecutionEnabled })) {
+      return { runnable: false };
+    }
 
     // A run needs a built image to exist; otherwise the button is shown
     // disabled (the client decides the copy) rather than queuing against a
@@ -165,6 +178,53 @@ export async function updateBlockMetaAction(
     }
 
     return { ok: true, data: { exists: true, executable: Boolean(executable) } };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/**
+ * Toggle a course's `student_execution_enabled` opt-in (Admin course settings).
+ * Authorized for an author/admin member of the course OR a platform admin —
+ * re-derived server-side and enforced again by the courses_write /
+ * courses_admin_update RLS policies (migrations 0001 / 0008). Returns the
+ * persisted value so the client confirms rather than trusts its optimistic one.
+ */
+export async function setStudentExecutionEnabledAction(
+  courseId: string,
+  enabled: boolean,
+): Promise<ActionResult<{ enabled: boolean }>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    const supabase = await createClient();
+    const { data: adminRow, error: adminError } = await supabase
+      .from('app_admins')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (adminError) {
+      throw new Error(`관리자 권한 확인에 실패했습니다: ${adminError.message}`);
+    }
+
+    const role = await getCourseRole(courseId);
+    if (!canToggleStudentExecution(role, adminRow != null)) {
+      throw new Error('작성자 또는 관리자만 학생 실행 허용을 변경할 수 있습니다.');
+    }
+
+    const next = Boolean(enabled);
+    const { error: updateError } = await supabase
+      .from('courses')
+      .update({ student_execution_enabled: next })
+      .eq('id', courseId);
+    if (updateError) {
+      throw new Error(`학생 코드 실행 설정을 저장하지 못했습니다: ${updateError.message}`);
+    }
+
+    return { ok: true, data: { enabled: next } };
   } catch (error) {
     return fail(error);
   }

@@ -231,6 +231,14 @@ assets(id uuid pk, course_id, kind, storage_path, alt_text, caption, metadata js
 - **AI kind 확장(§9/MVP4)**: `animation-code`(matplotlib.animation 코드 생성), `difficulty-adjust`(난이도 변환), `revision-from-annotations`(공개 세션 판서 분포·대상 블록 소스를 컨텍스트로 수정안 생성) — 기존 draft/승인/provenance 파이프라인 재사용.
 - **검증 불변식(Loop 5)**: A5 ePub에 instructor-note 부재(+PDF는 print 경로 역할 안전) · B5 marimo 실빌드→Storage→iframe(sandbox) 임베드 로드 · C5 Focus 내비/키보드/판서 앵커 유지 · D5 신규 3 kind draft 게이트+revision kind의 컨텍스트에 판서 데이터 포함 · 회귀(MVP0~3, DB는 reset 없이 `migration up`으로 보존).
 
+## 8.9 Loop 6 (Post-MVP 확장) 확정 설계 — 2026-07-08
+
+- **① 원격 push (완료)**: `feat/mvp0` + `main` origin push 완료(github jyryu3161/LectureStudio). 검증 부산물 제거.
+- **③ 학생 코드 실행 개방 (구현)**: `courses.student_execution_enabled` boolean(기본 **false**, 코스별 옵트인). 실행 게이트 = elevated OR (student AND 코스 플래그 AND 블록 executable). 학생 남용 방지: **per-user 동시 실행 1건 rate limit**(진행 중 execution 있으면 429), executions RLS에 student SELECT(본인 것) 추가. 샌드박스 정책 불변(--network none/non-root/512m/1cpu/256pid/30s/감사). Admin/Author가 코스 설정에서 토글.
+- **④ 다학기 재사용 (구현, PRD #10)**: `duplicateCourseForTerm(courseId, {label, copyPublishedAnnotations})` — 새 course(또는 course_version) 생성 + chapters/content_blocks 복사(stable ID **유지**: 재사용 시 판서 앵커 호환) + runtimes/marimo_apps config 복사(이미지/번들은 재빌드 대상 draft) + 선택적으로 이전 학기 **공개 세션 annotation 복사**(created_against_hash 유지 → drift 판정 그대로). AI artifacts/executions 로그는 미복사(신학기 fresh). Admin UI에 '새 학기로 복제'.
+- **② 클라우드 배포 (준비물 생성 + 안내)**: Quarto 무관. 산출물 — `docs/02-deployment.md`(supabase link+db push, Vercel(Next) + worker 호스팅(Fly/Render, Docker-in-Docker 또는 원격 docker host) 절차), `.env.production.example`, `worker/Dockerfile`(worker 컨테이너). **실제 배포는 사용자 자격증명 필요**(supabase login / SUPABASE_ACCESS_TOKEN, Vercel/Fly 토큰) — 미로그인 상태라 코드/문서만 준비, push는 사용자 실행.
+- **검증 불변식(Loop 6)**: A6 코스 플래그 off면 학생 실행 여전히 차단(UI 없음+거부); on이면 학생 실행 가능하되 동시 2건째는 rate-limited, 샌드박스 플래그 유지, 학생은 남의 execution 미열람 · B6 복제 후 새 코스에 챕터/블록 stable ID 동일, (옵션 시)공개 판서 앵커 정렬 유지, 원본 무변경 · C6 배포 산출물: `db push --dry-run` 상당의 마이그레이션 정합성(로컬 migration list clean) + worker Dockerfile 빌드 성공(로컬 docker build) + env 예시 완전성 · 회귀(MVP0~4).
+
 ## 9. 지금 실행할 것
 1. 본 문서 확정(= Fable 5 계획 산출물)
 2. Loop 1 Workflow 실행: S1 스캐폴드 → Supabase 기동 → S2~S4 병렬 구현 → Fable 5 검증 → (실패 시 수정 ≤3) → 커밋

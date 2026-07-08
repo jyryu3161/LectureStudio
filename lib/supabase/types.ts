@@ -425,6 +425,7 @@ export type Database = {
           description: string | null
           id: string
           owner_id: string | null
+          student_execution_enabled: boolean
           subtitle: string | null
           title: string
           updated_at: string
@@ -436,6 +437,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string | null
+          student_execution_enabled?: boolean
           subtitle?: string | null
           title: string
           updated_at?: string
@@ -447,6 +449,7 @@ export type Database = {
           description?: string | null
           id?: string
           owner_id?: string | null
+          student_execution_enabled?: boolean
           subtitle?: string | null
           title?: string
           updated_at?: string

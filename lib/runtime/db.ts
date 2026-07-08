@@ -16,6 +16,7 @@
  * defense-in-depth on top of the policies, not a bypass. The worker is the
  * only service-role path (worker/*), and it lives out of process.
  */
+import { canRunCode, isElevatedRunRole } from '@/lib/auth/guards';
 import { getCurrentUser, getCourseRole } from '@/lib/auth/session';
 import type { CourseRole } from '@/lib/supabase/roles';
 import { createClient } from '@/lib/supabase/server';
@@ -29,11 +30,10 @@ import type {
   QueueExecutionInput,
 } from './types';
 
-/** Roles permitted to run code / see the Run affordance (PRD §10.5). */
-const ELEVATED_ROLES: readonly CourseRole[] = ['author', 'instructor', 'admin'];
-function isElevated(role: CourseRole | null): boolean {
-  return role != null && ELEVATED_ROLES.includes(role);
-}
+/** Max in-flight (queued|running) runs a student may hold at once (PRD §10.5 opt-in). */
+const STUDENT_INFLIGHT_LIMIT = 1;
+/** Higher ceiling for elevated roles (mirrors the executions_rate_limit trigger, migration 0008). */
+const ELEVATED_INFLIGHT_LIMIT = 3;
 
 /**
  * Guard against Dockerfile/shell injection via package names. Conda/pip/apt
@@ -269,10 +269,42 @@ export async function queueExecution(input: QueueExecutionInput): Promise<string
     throw new Error('Block is not associated with a course.');
   }
 
-  // (4) Elevated course role required.
+  // (4) Effective run gate (PRD §10.5): elevated role, OR an opt-in student on
+  //     a course that has enabled student execution. Re-checked here server-side
+  //     and again by the executions_insert RLS policy (migration 0008).
   const role = await getCourseRole(courseId);
-  if (!isElevated(role)) {
+  let studentExecutionEnabled = false;
+  if (role === 'student') {
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .select('student_execution_enabled')
+      .eq('id', courseId)
+      .maybeSingle();
+    if (courseError) {
+      throw new Error(`Failed to load course settings: ${courseError.message}`);
+    }
+    studentExecutionEnabled = course?.student_execution_enabled === true;
+  }
+  if (!canRunCode({ role, blockExecutable: true, studentExecutionEnabled })) {
     throw new Error('Only an author, instructor, or admin can run code.');
+  }
+
+  // (4b) Rate limit: a student may hold at most ONE in-flight run; elevated
+  //      roles get a higher ceiling. Enforced here (clean Korean error) and, as
+  //      defense-in-depth, by the executions_rate_limit trigger (migration 0008).
+  const inFlightLimit = isElevatedRunRole(role)
+    ? ELEVATED_INFLIGHT_LIMIT
+    : STUDENT_INFLIGHT_LIMIT;
+  const { count: inFlightCount, error: countError } = await supabase
+    .from('executions')
+    .select('id', { count: 'exact', head: true })
+    .eq('executed_by', user.id)
+    .in('status', ['queued', 'running']);
+  if (countError) {
+    throw new Error(`Failed to check running executions: ${countError.message}`);
+  }
+  if ((inFlightCount ?? 0) >= inFlightLimit) {
+    throw new Error('이전 코드 실행이 끝난 뒤 다시 실행하세요.');
   }
 
   // (5) Resolve a READY runtime with an image to run against.

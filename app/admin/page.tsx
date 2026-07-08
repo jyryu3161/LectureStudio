@@ -2,7 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import {
+  DuplicateCourseSettings,
+  type DuplicateCourseItem,
+} from '@/components/admin/duplicate-course';
 import { LlmSettings, type ProviderCard } from '@/components/admin/llm-settings';
+import {
+  StudentExecutionSettings,
+  type StudentExecutionCourse,
+} from '@/components/execution/student-execution-settings';
 import { listProviders } from '@/lib/ai/registry';
 import { getAiSettings, listProviderKeysMasked } from '@/lib/ai/settings';
 import { getCurrentUser } from '@/lib/auth/session';
@@ -41,7 +49,32 @@ export default async function AdminPage() {
     redirect('/reading');
   }
 
-  const [settings, maskedKeys] = await Promise.all([getAiSettings(), listProviderKeysMasked()]);
+  const [settings, maskedKeys, { data: courseRows, error: coursesError }] = await Promise.all([
+    getAiSettings(),
+    listProviderKeysMasked(),
+    // RLS (courses_select) already scopes this to courses the admin may see;
+    // the toggle action re-checks author/admin-or-app_admin authz server-side.
+    supabase
+      .from('courses')
+      .select('id, title, student_execution_enabled')
+      .order('title', { ascending: true }),
+  ]);
+  if (coursesError) {
+    throw new Error(`강의 목록을 불러오지 못했습니다: ${coursesError.message}`);
+  }
+
+  const courses: StudentExecutionCourse[] = (courseRows ?? []).map((c) => ({
+    id: c.id,
+    title: c.title,
+    studentExecutionEnabled: c.student_execution_enabled === true,
+  }));
+
+  // Multi-term reuse control (PRD §10) — same admin-visible course set.
+  const duplicableCourses: DuplicateCourseItem[] = (courseRows ?? []).map((c) => ({
+    id: c.id,
+    title: c.title,
+    subtitle: null,
+  }));
 
   const keyByProvider = new Map(maskedKeys.map((k) => [k.provider, k] as const));
 
@@ -82,6 +115,8 @@ export default async function AdminPage() {
         activeLabel={activeCard.label}
         activeModel={activeCard.selectedModel}
       />
+      <StudentExecutionSettings courses={courses} />
+      <DuplicateCourseSettings courses={duplicableCourses} />
     </div>
   );
 }
