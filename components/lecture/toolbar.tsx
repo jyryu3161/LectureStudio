@@ -7,6 +7,7 @@ import {
   Eraser,
   Highlighter,
   LogOut,
+  Maximize2,
   Pen,
   Printer,
   Trash2,
@@ -82,6 +83,8 @@ export interface LectureToolbarProps {
   onTogglePublished: () => void;
   onClearAll: () => void;
   onPrint: () => void;
+  focusMode: boolean;
+  onToggleFocus: () => void;
   exitHref: string;
   courseCode: string | null;
   courseTitle: string;
@@ -104,6 +107,8 @@ export function LectureToolbar({
   onTogglePublished,
   onClearAll,
   onPrint,
+  focusMode,
+  onToggleFocus,
   exitHref,
   courseCode,
   courseTitle,
@@ -310,6 +315,26 @@ export function LectureToolbar({
             />
           </label>
         </div>
+
+        <Divider />
+
+        {/* Focus Mode toggle (block-by-block enlarged viewer). */}
+        <button
+          type="button"
+          aria-pressed={focusMode}
+          onClick={onToggleFocus}
+          title={focusMode ? '집중 모드 끄기' : '집중 모드 (블록 확대 보기)'}
+          className={cn(
+            'flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+            focusMode
+              ? 'bg-white text-ink'
+              : 'text-white/70 hover:bg-white/10 hover:text-white',
+          )}
+        >
+          <Maximize2 size={16} strokeWidth={1.8} aria-hidden="true" />
+          <span className="hidden lg:inline">집중 모드</span>
+        </button>
 
         <Divider />
 

@@ -10,6 +10,7 @@ import type {
 import { MAX_CHAPTER_SOURCE_LENGTH } from '@/components/authoring/types';
 import { canEditCourse } from '@/lib/auth/guards';
 import { getCourseRole, getCurrentUser } from '@/lib/auth/session';
+import { readChapterSource } from '@/lib/chapters/source';
 import { ensureStableIds, parseWithWarnings, upsertBlockIndex, type ParseWarning } from '@/lib/content';
 import { createClient } from '@/lib/supabase/server';
 
@@ -128,10 +129,12 @@ export async function reloadChapterSource(
     return { ok: false, error: 'You do not have permission to view this chapter.' };
   }
 
+  // Confirm the chapter exists and belongs to this course via the request-scoped
+  // (RLS) client — `source` itself is no longer REST-readable (migration 0007).
   const supabase = await createClient();
   const { data: chapter, error } = await supabase
     .from('chapters')
-    .select('source')
+    .select('id')
     .eq('id', chapterId)
     .eq('course_id', courseId)
     .maybeSingle();
@@ -143,7 +146,14 @@ export async function reloadChapterSource(
     return { ok: false, error: 'Chapter not found (or you cannot access it).' };
   }
 
-  return { ok: true, source: chapter.source };
+  // The canEditCourse gate above authorized this author; read the full source
+  // (authors may see instructor notes) via the elevated helper.
+  const sourceRow = await readChapterSource(chapter.id);
+  if (sourceRow == null) {
+    return { ok: false, error: 'Chapter not found (or you cannot access it).' };
+  }
+
+  return { ok: true, source: sourceRow.source };
 }
 
 /** A second, diagnostics-only parse pass -- must never fail the save itself. */

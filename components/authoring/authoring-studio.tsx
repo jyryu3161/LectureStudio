@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AiPanel, type ApproveArtifactOutcome } from '@/components/authoring/ai-panel';
 import { BlockInspector } from '@/components/authoring/block-inspector';
+import { DemosPanel } from '@/components/authoring/demos-panel';
 import { PreviewPane } from '@/components/authoring/preview-pane';
 import { SourceEditor } from '@/components/authoring/source-editor';
 import type {
@@ -23,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { approveArtifactAction } from '@/lib/ai/actions';
 import type { AiArtifact } from '@/lib/ai/artifacts';
+import type { DemoApp } from '@/lib/demos/types';
 import { cn } from '@/lib/utils';
 
 const PREVIEW_DEBOUNCE_MS = 500;
@@ -44,7 +46,9 @@ export interface AuthoringStudioProps {
   onReloadSource: (input: ReloadChapterSourceInput) => Promise<ReloadChapterSourceResult>;
   /** AI drafts + history for this chapter (from the RSC via listArtifacts). */
   initialArtifacts: AiArtifact[];
-  /** The signed-in user's id — used by the AI panel to label provenance ("나"). */
+  /** The course's marimo demo apps, newest first (from the RSC via listDemoApps). */
+  initialDemos: DemoApp[];
+  /** The signed-in user's id — used by the AI / Demos panels to label provenance ("나"). */
   currentUserId: string;
 }
 
@@ -66,6 +70,7 @@ export function AuthoringStudio({
   onPreview,
   onReloadSource,
   initialArtifacts,
+  initialDemos,
   currentUserId,
 }: AuthoringStudioProps) {
   const [source, setSource] = useState(initialSource);
@@ -285,6 +290,7 @@ export function AuthoringStudio({
                 <TabsTrigger value="preview">Preview</TabsTrigger>
                 <TabsTrigger value="blocks">Blocks ({preview.blocks.length})</TabsTrigger>
                 <TabsTrigger value="ai">AI 어시스턴트</TabsTrigger>
+                <TabsTrigger value="demos">데모</TabsTrigger>
               </TabsList>
               {previewStatus === 'loading' && (
                 <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
@@ -312,6 +318,13 @@ export function AuthoringStudio({
                 initialArtifacts={initialArtifacts}
                 sourceDirty={isDirty}
                 onApprove={handleApprove}
+              />
+            </TabsContent>
+            <TabsContent value="demos" className="mt-0 min-h-0 flex-1 overflow-hidden">
+              <DemosPanel
+                courseId={chapter.courseId}
+                currentUserId={currentUserId}
+                initialDemos={initialDemos}
               />
             </TabsContent>
           </Tabs>

@@ -13,15 +13,28 @@
  */
 import { canEditCourse } from '@/lib/auth/guards';
 import { getCourseRole, getCurrentUser } from '@/lib/auth/session';
-import { ensureStableIds, upsertBlockIndex } from '@/lib/content';
+import { readChapterSource } from '@/lib/chapters/source';
+import { ensureStableIds, upsertBlockIndex, type Block } from '@/lib/content';
 import { createClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/supabase/types';
 
-import { buildPrompt } from './prompts';
+/** The request-scoped Supabase client type (createClient is async). */
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+import { buildPrompt, formatAnnotationStats } from './prompts';
 import { getProvider } from './registry';
 import { getActiveProviderConfig } from './settings';
-import type { ArtifactKind, GenerateRequest } from './types';
+import type {
+  AnnotationBlockStat,
+  AnnotationContext,
+  AnnotationType,
+  ArtifactKind,
+  GenerateRequest,
+} from './types';
 import { isArtifactKind } from './types';
+
+/** Cap on how many top-annotated blocks we feed the model (context budget). */
+const REVISION_TOP_BLOCKS = 5;
 
 export interface GenerateArtifactInput {
   chapterId: string;
@@ -93,6 +106,101 @@ function toArtifact(row: {
 const ARTIFACT_COLUMNS =
   'id, course_id, chapter_id, block_id, artifact_type, status, provider, model, output, created_by, approved_by, created_at';
 
+/** Slice a block's MyST source out of the chapter source by its line range. */
+function blockSourceText(source: string, block: Block): string {
+  if (!block.sourceRange) return '';
+  const lines = source.split('\n');
+  const { start, end } = block.sourceRange;
+  return lines.slice(start.line - 1, end.line).join('\n').trim();
+}
+
+const ANNOTATION_TYPES: readonly AnnotationType[] = ['pen', 'highlighter', 'text'];
+
+function isAnnotationType(value: unknown): value is AnnotationType {
+  return typeof value === 'string' && (ANNOTATION_TYPES as readonly string[]).includes(value);
+}
+
+/**
+ * Assembles the 'revision-from-annotations' context server-side: aggregates the
+ * chapter's PUBLISHED lecture-session annotations per block (count + type mix),
+ * takes the top-N most-annotated blocks, and attaches each block's MyST source.
+ *
+ * The request-scoped client is used deliberately — the requester is already an
+ * author/admin (gated above), so RLS permits reading the sessions/annotations;
+ * we still filter to `published = true` so the signal reflects delivered
+ * lectures (not the instructor's private in-progress ones).
+ *
+ * Throws a clean '공개된 판서가 없습니다' when the chapter has no published
+ * annotations to ground a revision on.
+ */
+async function assembleAnnotationContext(
+  supabase: ServerClient,
+  chapterId: string,
+  chapterSource: string,
+): Promise<AnnotationContext> {
+  const { data: sessions, error: sessionsError } = await supabase
+    .from('lecture_sessions')
+    .select('id')
+    .eq('chapter_id', chapterId)
+    .eq('published', true);
+  if (sessionsError) {
+    throw new Error(`Failed to load published lectures: ${sessionsError.message}`);
+  }
+  const sessionIds = (sessions ?? []).map((s) => s.id);
+  if (sessionIds.length === 0) {
+    throw new Error('공개된 판서가 없습니다.');
+  }
+
+  const { data: annotations, error: annError } = await supabase
+    .from('annotations')
+    .select('block_id, annotation_type')
+    .eq('chapter_id', chapterId)
+    .in('lecture_session_id', sessionIds);
+  if (annError) {
+    throw new Error(`Failed to load annotations: ${annError.message}`);
+  }
+  const rows = annotations ?? [];
+  if (rows.length === 0) {
+    throw new Error('공개된 판서가 없습니다.');
+  }
+
+  // Aggregate per block: total count + count by annotation_type.
+  const perBlock = new Map<string, { count: number; byType: Partial<Record<AnnotationType, number>> }>();
+  for (const row of rows) {
+    const blockId = row.block_id;
+    if (!blockId) continue;
+    const entry = perBlock.get(blockId) ?? { count: 0, byType: {} };
+    entry.count += 1;
+    if (isAnnotationType(row.annotation_type)) {
+      entry.byType[row.annotation_type] = (entry.byType[row.annotation_type] ?? 0) + 1;
+    }
+    perBlock.set(blockId, entry);
+  }
+
+  // Resolve each block's current MyST source (ids are preserved by ensureStableIds).
+  const { source: stableSource, blocks } = ensureStableIds(chapterSource);
+  const byId = new Map(blocks.map((b) => [b.id, b]));
+
+  const topBlocks: AnnotationBlockStat[] = [...perBlock.entries()]
+    .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+    .slice(0, REVISION_TOP_BLOCKS)
+    .map(([blockId, agg]) => {
+      const block = byId.get(blockId);
+      return {
+        blockId,
+        count: agg.count,
+        byType: agg.byType,
+        sourceText: block ? blockSourceText(stableSource, block) : '',
+      };
+    });
+
+  return {
+    sessionCount: sessionIds.length,
+    totalAnnotations: rows.length,
+    blocks: topBlocks,
+  };
+}
+
 /**
  * Generates an artifact and stores it as a draft (never mutates the chapter).
  * Gated to the chapter's course author/admin.
@@ -121,7 +229,7 @@ export async function generateArtifact(input: GenerateArtifactInput): Promise<Ai
   const supabase = await createClient();
   const { data: chapter, error: chapterError } = await supabase
     .from('chapters')
-    .select('id, course_id, title, source')
+    .select('id, course_id, title')
     .eq('id', chapterId)
     .maybeSingle();
   if (chapterError) {
@@ -137,6 +245,11 @@ export async function generateArtifact(input: GenerateArtifactInput): Promise<Ai
     throw new Error('You do not have permission to generate for this course.');
   }
 
+  // `chapters.source` is no longer REST-readable (migration 0007). The
+  // canEditCourse gate above authorized this author; read the source (grounding
+  // for generation) via the elevated helper.
+  const chapterSource = (await readChapterSource(chapter.id))?.source ?? '';
+
   let courseTitle = 'Course';
   if (courseId) {
     const { data: course } = await supabase
@@ -147,14 +260,25 @@ export async function generateArtifact(input: GenerateArtifactInput): Promise<Ai
     if (course?.title) courseTitle = course.title;
   }
 
+  // 'revision-from-annotations' needs extra, server-assembled grounding from
+  // the chapter's published lecture annotations (stored in source_context for
+  // provenance). All other kinds ground on the chapter source alone.
+  let annotations: AnnotationContext | undefined;
+  let sourceContext = blockId ? `block:${blockId}` : 'chapter';
+  if (kind === 'revision-from-annotations') {
+    annotations = await assembleAnnotationContext(supabase, chapterId, chapterSource);
+    sourceContext = `annotations\n${formatAnnotationStats(annotations)}`;
+  }
+
   const request: GenerateRequest = {
     kind,
     instruction,
     context: {
       courseTitle,
       chapterTitle: chapter.title,
-      chapterSource: chapter.source,
+      chapterSource,
       blockId,
+      annotations,
     },
   };
 
@@ -175,7 +299,7 @@ export async function generateArtifact(input: GenerateArtifactInput): Promise<Ai
       provider: cfg.provider,
       model: cfg.model,
       prompt: `SYSTEM:\n${built.system}\n\nUSER:\n${built.user}`,
-      source_context: blockId ? `block:${blockId}` : 'chapter',
+      source_context: sourceContext,
       output: storedOutput as unknown as Json,
       created_by: user.id,
     })
@@ -258,15 +382,21 @@ export async function approveArtifact(
 
   const { data: chapter, error: chapterError } = await supabase
     .from('chapters')
-    .select('id, course_id, version_id, source')
+    .select('id, course_id, version_id')
     .eq('id', artifact.chapter_id)
     .maybeSingle();
   if (chapterError || !chapter) {
     throw new Error(`Failed to load chapter for approval: ${chapterError?.message ?? 'not found'}`);
   }
 
+  // `chapters.source` is no longer REST-readable (migration 0007); read the
+  // current source via the elevated helper (the artifact's course was already
+  // authorized above). The UPDATE below still goes through the request-scoped
+  // client, governed by the author/admin `chapters_write` RLS policy.
+  const currentSource = (await readChapterSource(chapter.id))?.source ?? '';
+
   // Append at the end, separated by a blank line so blocks stay distinct.
-  const base = chapter.source.replace(/\s*$/, '');
+  const base = currentSource.replace(/\s*$/, '');
   const combined = base.length > 0 ? `${base}\n\n${markdown.trim()}\n` : `${markdown.trim()}\n`;
 
   const { source: nextSource, blocks } = ensureStableIds(combined);

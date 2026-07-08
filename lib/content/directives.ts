@@ -35,6 +35,7 @@ export const STUDENT_DETAIL_DIRECTIVE = 'student-detail';
 export const INSTRUCTOR_NOTE_DIRECTIVE = 'instructor-note';
 export const EQUATION_DIRECTIVE = 'equation';
 export const VIDEO_DIRECTIVE = 'video';
+export const INTERACTIVE_DEMO_DIRECTIVE = 'interactive-demo';
 
 /** AST node `type` values produced by the directives above (see blocks.ts). */
 export const LECTURE_SUMMARY_NODE = 'lectureSummary';
@@ -42,6 +43,30 @@ export const STUDENT_DETAIL_NODE = 'studentDetail';
 export const INSTRUCTOR_NOTE_NODE = 'instructorNote';
 export const EQUATION_NODE = 'equation';
 export const VIDEO_NODE = 'video';
+export const INTERACTIVE_DEMO_NODE = 'interactiveDemo';
+
+/**
+ * `:::{interactive-demo} <appId>` (MVP4, PRD §4.7 / §5.5). The directive
+ * argument is the id of a `marimo_apps` row (see lib/demos); the body, if
+ * any, is an optional caption parsed as MyST (same as the other wrappers).
+ * The resolved app id is carried on the node as `appId` so
+ * `deriveBlockMetadata` (blocks.ts) can persist it to content_blocks.metadata
+ * and the renderer (components/blocks/interactive-demo.tsx) can resolve it to
+ * the public WASM-bundle iframe URL. Returns exactly one node (the
+ * one-top-level-node = one Block rule), like the wrappers above.
+ */
+function interactiveDemoDirective(): DirectiveSpec {
+  return {
+    name: INTERACTIVE_DEMO_DIRECTIVE,
+    arg: { type: String },
+    body: { type: 'myst' },
+    run(data): GenericNode[] {
+      const children = Array.isArray(data.body) ? data.body : [];
+      const appId = typeof data.arg === 'string' ? data.arg.trim() : '';
+      return [{ type: INTERACTIVE_DEMO_NODE, appId, children }];
+    },
+  };
+}
 
 /**
  * Custom directive specs merged into myst-parser's defaults (figure, code,
@@ -60,11 +85,13 @@ export const VIDEO_NODE = 'video';
  *    now, PRD §4.7) instead of failing as an unknown directive. Its body is
  *    parsed as MyST (caption/label) exactly like the other wrappers.
  *
- * `animation` / `interactive-demo` / `quiz` remain stub-only for MVP0 (PRD
- * §4.7) — no authoring syntax yet, so no directive is registered for them.
- * blockTypeOf()'s fallback keeps parsing them gracefully (as `paragraph`)
- * if an unknown directive with one of those names shows up anyway; wiring
- * real directives for them is a small, additive follow-up.
+ * `interactive-demo` is now a real directive (MVP4) that parses its `<appId>`
+ * argument into the block (see interactiveDemoDirective above). `animation` /
+ * `quiz` remain stub-only (PRD §4.7) — no authoring syntax yet, so no
+ * directive is registered for them. blockTypeOf()'s fallback keeps parsing
+ * them gracefully (as `paragraph`) if an unknown directive with one of those
+ * names shows up anyway; wiring real directives for them is a small, additive
+ * follow-up.
  */
 export const customDirectives: DirectiveSpec[] = [
   wrapperDirective(LECTURE_SUMMARY_DIRECTIVE, LECTURE_SUMMARY_NODE),
@@ -72,4 +99,5 @@ export const customDirectives: DirectiveSpec[] = [
   wrapperDirective(INSTRUCTOR_NOTE_DIRECTIVE, INSTRUCTOR_NOTE_NODE),
   wrapperDirective(EQUATION_DIRECTIVE, EQUATION_NODE),
   wrapperDirective(VIDEO_DIRECTIVE, VIDEO_NODE),
+  interactiveDemoDirective(),
 ];

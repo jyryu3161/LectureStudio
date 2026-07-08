@@ -10,11 +10,36 @@
  * These are pure string builders — no network, no secrets — so they are unit
  * testable and reused verbatim by every provider.
  */
-import type { ArtifactKind, GenerateRequest } from './types';
+import type { AnnotationContext, ArtifactKind, GenerateRequest } from './types';
 
 export interface BuiltPrompt {
   system: string;
   user: string;
+}
+
+/**
+ * Renders the assembled annotation context as a compact, deterministic MyST-ish
+ * table + block excerpts. Reused verbatim for the prompt, the mock provider's
+ * echo, and the stored provenance (source_context) so all three agree.
+ */
+export function formatAnnotationStats(ctx: AnnotationContext): string {
+  const header = [
+    `Published sessions: ${ctx.sessionCount}`,
+    `Total annotations: ${ctx.totalAnnotations}`,
+    '',
+    '| block_id | count | types |',
+    '| --- | --- | --- |',
+  ];
+  const rows = ctx.blocks.map((b) => {
+    const types = Object.entries(b.byType)
+      .map(([t, n]) => `${t}:${n}`)
+      .join(', ');
+    return `| ${b.blockId} | ${b.count} | ${types || '—'} |`;
+  });
+  const excerpts = ctx.blocks.map((b) =>
+    [`### ${b.blockId} (${b.count})`, '', '```myst', b.sourceText.trim() || '(source unavailable)', '```'].join('\n'),
+  );
+  return [...header, ...rows, '', ...excerpts].join('\n');
 }
 
 /** Cap the chapter source we embed so a huge chapter can't blow the context. */
@@ -61,6 +86,21 @@ const KIND_SPEC: Record<ArtifactKind, { role: string; shape: string }> = {
     shape:
       'Return a MyST `## Quiz` section with 3–5 questions as an ordered list. For multiple-choice items list options as `-` bullets, and include an answer key under a `### 정답` subheading at the end.',
   },
+  'animation-code': {
+    role: 'Generate a matplotlib animation that illustrates a dynamic concept from the chapter (PRD §9.4 경로 A).',
+    shape:
+      'Return exactly one Python code block (```python ... ```) that builds a `matplotlib.animation.FuncAnimation`. Seed all randomness deterministically (e.g. `np.random.seed(0)`) so runs are reproducible. Follow the code block with one short sentence noting how to run/save it (e.g. `ani.save(...)` or `HTML(ani.to_jshtml())`). No other prose.',
+  },
+  'difficulty-adjust': {
+    role: 'Rewrite the chapter (or the focused selection) at the difficulty level the author asks for.',
+    shape:
+      "Read the target level from the author's instruction ('더 쉽게' = easier, more scaffolding/intuition/examples; '더 어렵게' = harder, more rigor/formalism/depth). Return MyST replacement section(s) that could stand in for the original content at that level, preserving its headings/structure and staying grounded in the source. Output MyST only.",
+  },
+  'revision-from-annotations': {
+    role: "Suggest concrete content revisions for the blocks students annotated most during published lectures (heavy annotation ⇒ likely confusion or emphasis).",
+    shape:
+      'Using the annotation statistics and block excerpts provided, return MyST revision suggestions: for each high-signal block, an improved/clarified replacement passage, then a short `### 근거` bulleted list explaining why (referencing the annotation counts/types). Ground every rewrite in the given block source.',
+  },
 };
 
 function truncateSource(source: string): string {
@@ -84,11 +124,18 @@ export function buildPrompt(req: GenerateRequest): BuiltPrompt {
     ? `\nFocus specifically on the block with id "${blockId}" within the chapter.`
     : '';
 
+  const annotations = req.context.annotations;
+  const annotationSection =
+    annotations && annotations.blocks.length > 0
+      ? ['', 'Published lecture annotation statistics (most-annotated blocks):', '---', formatAnnotationStats(annotations), '---']
+      : [];
+
   const user = [
     `Course: ${courseTitle}`,
     `Chapter: ${chapterTitle}`,
     `Artifact kind: ${req.kind}`,
     `Author instruction: ${instruction}${focus}`,
+    ...annotationSection,
     '',
     'Chapter source (MyST):',
     '---',

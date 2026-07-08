@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { listAnnotations, listSessions, type AnnotationRow, type LectureSessionRow } from '@/lib/annotations';
 import { canViewInstructorContent } from '@/lib/auth/guards';
 import { getCourseRole } from '@/lib/auth/session';
+import { readChapterSource } from '@/lib/chapters/source';
 import { ensureStableIds, type Block } from '@/lib/content';
 import { mystNodesToPlainText, renderBlocks } from '@/lib/render';
 import { createClient } from '@/lib/supabase/server';
@@ -43,11 +44,17 @@ async function loadLecturePageData(
 
   const { data: chapter } = await supabase
     .from('chapters')
-    .select('id, title, slug, order_index, source')
+    .select('id, title, slug, order_index')
     .eq('course_id', course.id)
     .eq('slug', chapterSlug)
     .maybeSingle();
   if (!chapter) return null;
+
+  // `chapters.source` is no longer REST-readable (migration 0007); read it via
+  // the elevated helper. The RLS chapter fetch above authorized this viewer, and
+  // the presenter role gate + student-role render below strip instructor notes.
+  const sourceRow = await readChapterSource(chapter.id);
+  if (sourceRow == null) return null;
 
   const { data: chapters } = await supabase
     .from('chapters')
@@ -55,7 +62,7 @@ async function loadLecturePageData(
     .eq('course_id', course.id)
     .order('order_index', { ascending: true });
 
-  return { course, chapter, chapters: chapters ?? [] };
+  return { course, chapter: { ...chapter, source: sourceRow.source }, chapters: chapters ?? [] };
 }
 
 export default async function LectureChapterPage({

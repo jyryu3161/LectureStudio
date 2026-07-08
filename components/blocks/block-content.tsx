@@ -6,6 +6,7 @@ import { EquationBlock } from './equation';
 import { FigureBlock } from './figure';
 import { HeadingBlock } from './heading';
 import { InstructorNoteBlock } from './instructor-note';
+import { InteractiveDemoBlock } from './interactive-demo';
 import { LectureSummaryBlock } from './lecture-summary';
 import { ParagraphBlock } from './paragraph';
 import { ComingSoonBlock } from './stub';
@@ -39,9 +40,10 @@ export function BlockContent({ block, codeHtml }: { block: Block; codeHtml: stri
       return <CodeBlock node={node} keyPrefix={id} html={codeHtml} />;
     case 'code-output':
       return <CodeOutputBlock node={node} keyPrefix={id} />;
+    case 'interactive-demo':
+      return <InteractiveDemoBlock block={block} />;
     case 'video':
     case 'animation':
-    case 'interactive-demo':
     case 'quiz':
       return <ComingSoonBlock blockType={blockType} />;
     default: {

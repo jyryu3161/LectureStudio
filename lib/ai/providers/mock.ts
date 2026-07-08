@@ -5,12 +5,15 @@
  * artifact kind, chapter title, and the author's instruction verbatim, so
  * e2e/unit tests can assert on the result without any external service.
  */
-import type { AiProvider, ArtifactKind, GenerateRequest, ProviderConfig } from '../types';
+import { formatAnnotationStats } from '../prompts';
+import type { AiProvider, GenerateRequest, ProviderConfig } from '../types';
 
 const MOCK_MODEL = 'mock-1';
 
 /** Per-kind deterministic MyST body. Keep each self-evidently MyST. */
-function bodyFor(kind: ArtifactKind, instruction: string, chapterTitle: string): string {
+function bodyFor(req: GenerateRequest, instruction: string): string {
+  const { kind } = req;
+  const chapterTitle = req.context.chapterTitle;
   const note = `> Mock output for kind \`${kind}\` on chapter "${chapterTitle}".`;
   const echo = `Instruction: ${instruction}`;
 
@@ -53,6 +56,60 @@ function bodyFor(kind: ArtifactKind, instruction: string, chapterTitle: string):
         '',
         '1. A',
       ].join('\n');
+    case 'animation-code':
+      return [
+        note,
+        '',
+        '```python',
+        'import numpy as np',
+        'import matplotlib.pyplot as plt',
+        'from matplotlib.animation import FuncAnimation',
+        '',
+        `# ${echo}`,
+        'np.random.seed(0)  # deterministic',
+        'fig, ax = plt.subplots()',
+        'x = np.linspace(0, 2 * np.pi, 100)',
+        '(line,) = ax.plot(x, np.sin(x))',
+        `ax.set_title(${JSON.stringify(chapterTitle)})`,
+        '',
+        'def update(frame):',
+        '    line.set_ydata(np.sin(x + frame / 10))',
+        '    return (line,)',
+        '',
+        'ani = FuncAnimation(fig, update, frames=60, interval=50, blit=True)',
+        '```',
+        '',
+        'Run interactively or export with `ani.save("anim.gif")`.',
+      ].join('\n');
+    case 'difficulty-adjust':
+      return [
+        note,
+        '',
+        '## Difficulty Adjust',
+        '',
+        echo,
+        '',
+        'This is a deterministic mock rewrite at the requested difficulty level.',
+      ].join('\n');
+    case 'revision-from-annotations': {
+      const annotations = req.context.annotations;
+      const stats = annotations
+        ? formatAnnotationStats(annotations)
+        : '(no annotation context provided)';
+      return [
+        note,
+        '',
+        '## Revision Suggestions',
+        '',
+        echo,
+        '',
+        stats,
+        '',
+        '### 근거',
+        '',
+        '- Deterministic mock revision grounded in the annotation stats above.',
+      ].join('\n');
+    }
     default: {
       // Exhaustiveness guard — a new kind must extend this switch.
       const _never: never = kind;
@@ -68,6 +125,6 @@ export const mockProvider: AiProvider = {
   defaultModel: MOCK_MODEL,
   async generate(req: GenerateRequest, _cfg: ProviderConfig): Promise<string> {
     const instruction = req.instruction.trim() || '(none)';
-    return bodyFor(req.kind, instruction, req.context.chapterTitle);
+    return bodyFor(req, instruction);
   },
 };

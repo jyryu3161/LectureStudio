@@ -12,6 +12,7 @@ export { EquationBlock } from './equation';
 export { FigureBlock } from './figure';
 export { HeadingBlock } from './heading';
 export { InstructorNoteBlock } from './instructor-note';
+export { InteractiveDemoBlock } from './interactive-demo';
 export { LectureSummaryBlock } from './lecture-summary';
 export { ParagraphBlock } from './paragraph';
 export { ComingSoonBlock } from './stub';

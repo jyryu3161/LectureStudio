@@ -13,6 +13,7 @@ import type {
 } from '@/lib/annotations/types';
 
 import { persistAnnotations } from '@/app/lecture/actions';
+import { FocusMode } from './focus-mode';
 import { InstructorPanel } from './instructor-panel';
 import { LectureChromeStyle } from './lecture-chrome-style';
 import { LectureToc } from './lecture-toc';
@@ -110,6 +111,8 @@ export function LectureStage({
   const [color, setColor] = useState<AnnotationColor>('#16181c');
   const [tocOpen, setTocOpen] = useState(true);
   const [currentBlockId, setCurrentBlockId] = useState<string | null>(blockOrder[0] ?? null);
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusIndex, setFocusIndex] = useState(0);
   const [sessionBusy, setSessionBusy] = useState(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
 
@@ -243,13 +246,15 @@ export function LectureStage({
   // Escape exits the active tool (PRD §8.2). The text-input inside the layer
   // handles its own Escape first (stopping propagation is not needed since it
   // only closes the input); at the stage level we drop the tool.
+  // While focus mode is on, Escape is owned by the focus viewer (it exits focus
+  // rather than dropping the tool), so this handler stands down.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && tool !== null) setTool(null);
+      if (e.key === 'Escape' && tool !== null && !focusMode) setTool(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [tool]);
+  }, [tool, focusMode]);
 
   // Current block indicator: whichever public block is nearest the vertical
   // center of the scroll viewport (kept intentionally simple).
@@ -293,6 +298,43 @@ export function LectureStage({
   const currentBlockIndex =
     currentBlockId != null ? blockOrder.indexOf(currentBlockId) : -1;
 
+  // --- Focus Mode (PRD §8.3.2): block-by-block enlarged viewer. -------------
+  // Enter at the block the presenter is currently on; exit returns to the full
+  // Live Book scrolled to that block.
+  const exitScrollTargetRef = useRef<string | null>(null);
+
+  const enterFocus = useCallback(() => {
+    setFocusIndex(currentBlockIndex >= 0 ? currentBlockIndex : 0);
+    setFocusMode(true);
+  }, [currentBlockIndex]);
+
+  const exitFocus = useCallback(() => {
+    exitScrollTargetRef.current = blockOrder[focusIndex] ?? null;
+    setFocusMode(false);
+  }, [blockOrder, focusIndex]);
+
+  const handleFocusIndexChange = useCallback(
+    (i: number) => {
+      setFocusIndex(i);
+      const id = blockOrder[i];
+      if (id) setCurrentBlockId(id); // keep the instructor-panel indicator in sync
+    },
+    [blockOrder],
+  );
+
+  // After leaving focus mode, bring the last-focused block back into view.
+  useEffect(() => {
+    if (focusMode) return;
+    const id = exitScrollTargetRef.current;
+    if (!id) return;
+    exitScrollTargetRef.current = null;
+    const container = containerRef.current;
+    if (!container) return;
+    const selector = typeof CSS !== 'undefined' ? CSS.escape(id) : id;
+    const el = container.querySelector<HTMLElement>(`[data-block-id="${selector}"]`);
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [focusMode]);
+
   return (
     <div className="relative flex h-full min-h-0 flex-col bg-canvas">
       <LectureChromeStyle />
@@ -315,11 +357,22 @@ export function LectureStage({
           onTogglePublished={handleTogglePublished}
           onClearAll={handleClearAll}
           onPrint={() => window.print()}
+          focusMode={focusMode}
+          onToggleFocus={focusMode ? exitFocus : enterFocus}
           exitHref={`/reading/${courseId}/${chapterSlug}`}
           courseCode={courseCode}
           courseTitle={courseTitle}
         />
       </div>
+
+      <FocusMode
+        active={focusMode}
+        containerRef={containerRef}
+        blockOrder={blockOrder}
+        index={focusIndex}
+        onIndexChange={handleFocusIndexChange}
+        onExit={exitFocus}
+      />
 
       <div className="flex min-h-0 flex-1">
         {/* Collapsible TOC (left). */}
@@ -349,7 +402,13 @@ export function LectureStage({
               목차
             </button>
           )}
-          <article className="mx-auto max-w-[820px] px-6 py-12 sm:px-10 lg:px-14">
+          <article
+            className={
+              focusMode
+                ? 'mx-auto max-w-[1040px] px-6 py-12 sm:px-10 lg:px-14'
+                : 'mx-auto max-w-[820px] px-6 py-12 sm:px-10 lg:px-14'
+            }
+          >
             <p
               data-lecture-chrome
               className="mb-8 font-mono text-xs uppercase tracking-[0.09em] text-muted"

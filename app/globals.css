@@ -50,3 +50,77 @@
     background: var(--color-selection);
   }
 }
+
+/*
+ * Reading Mode print stylesheet (PRD §5.6 MVP4 -- "PDF로 내보내기").
+ *
+ * Lives in globals (per the export workstream's allowed surface) but is
+ * scoped to the reading chapter route via `body:has([data-reading-topbar])`
+ * -- the reading top bar carries that attribute, so these rules never affect
+ * printing any other page. They only take effect during printing (@media
+ * print) and only restyle the DOM the viewer already has, so they are
+ * role-safe by construction: the browser prints the viewer's own
+ * visibility-filtered render, never anything the server withheld.
+ */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Unclip the app-shell + reading flex containers so the article flows
+     across pages instead of being trapped in an overflow:hidden viewport. */
+  body:has([data-reading-topbar]),
+  body:has([data-reading-topbar]) > div,
+  body:has([data-reading-topbar]) main,
+  body:has([data-reading-topbar]) main div {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body:has([data-reading-topbar]) > div {
+    display: block !important;
+  }
+
+  /* Hide app chrome: dark rail, reading top bar, course TOC, chapter tools. */
+  body:has([data-reading-topbar]) nav[aria-label='Primary'],
+  body:has([data-reading-topbar]) [data-reading-topbar],
+  body:has([data-reading-topbar]) nav[aria-label='Course chapters'],
+  body:has([data-reading-topbar]) aside[aria-label='Chapter tools'] {
+    display: none !important;
+  }
+
+  /* Reading column -> full-width serif body. */
+  body:has([data-reading-topbar]) article {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: var(--font-serif), 'Source Serif 4', Georgia, serif !important;
+    color: #111 !important;
+  }
+
+  /* Keep KaTeX / Shiki backgrounds + colors in the printed PDF. */
+  body:has([data-reading-topbar]) article,
+  body:has([data-reading-topbar]) article * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Avoid awkward breaks after headings / inside code + figures. */
+  body:has([data-reading-topbar]) article h1,
+  body:has([data-reading-topbar]) article h2,
+  body:has([data-reading-topbar]) article h3 {
+    break-after: avoid;
+  }
+
+  body:has([data-reading-topbar]) article pre,
+  body:has([data-reading-topbar]) article figure,
+  body:has([data-reading-topbar]) article blockquote {
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 18mm;
+  }
+}

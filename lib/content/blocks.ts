@@ -5,6 +5,7 @@ import type { GenericNode } from 'myst-common';
 import {
   EQUATION_NODE,
   INSTRUCTOR_NOTE_NODE,
+  INTERACTIVE_DEMO_NODE,
   LECTURE_SUMMARY_NODE,
   STUDENT_DETAIL_NODE,
   VIDEO_NODE,
@@ -43,6 +44,8 @@ export function blockTypeOf(node: GenericNode): BlockType {
       return 'equation';
     case VIDEO_NODE:
       return 'video';
+    case INTERACTIVE_DEMO_NODE:
+      return 'interactive-demo';
     case 'code':
       return 'code';
     case 'image':
@@ -100,5 +103,8 @@ export function deriveBlockMetadata(node: GenericNode): Record<string, unknown> 
   if (typeof node.lang === 'string') metadata.lang = node.lang;
   if (typeof node.alt === 'string') metadata.alt = node.alt;
   if (typeof node.depth === 'number') metadata.depth = node.depth;
+  // interactive-demo carries the marimo app id parsed from the directive arg
+  // (see directives.ts) so the renderer can resolve it to the public iframe.
+  if (typeof node.appId === 'string' && node.appId) metadata.appId = node.appId;
   return metadata;
 }

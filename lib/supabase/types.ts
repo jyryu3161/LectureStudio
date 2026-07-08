@@ -567,6 +567,53 @@ export type Database = {
           },
         ]
       }
+      marimo_apps: {
+        Row: {
+          bundle_path: string | null
+          course_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          log: string
+          name: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bundle_path?: string | null
+          course_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          log?: string
+          name: string
+          source: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bundle_path?: string | null
+          course_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          log?: string
+          name?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marimo_apps_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       runtime_builds: {
         Row: {
           created_at: string
@@ -699,6 +746,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "executions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_marimo_build: {
+        Args: never
+        Returns: {
+          bundle_path: string | null
+          course_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          log: string
+          name: string
+          source: string
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "marimo_apps"
           isOneToOne: false
           isSetofReturn: true
         }

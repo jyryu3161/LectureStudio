@@ -223,6 +223,14 @@ assets(id uuid pk, course_id, kind, storage_path, alt_text, caption, metadata js
 - **Admin Runtime Studio(§10.4 최소)**: 런타임 목록/생성/편집(python 버전, conda/pip/apt, mem/timeout), Dockerfile 미리보기, 빌드 실행+로그, import test, 활성화.
 - **검증 불변식(Loop 4)**: A4 학생에게 Run 없음+서버 거부+RLS 0행 · B4 실제 docker 빌드 성공+import test · C4 실행 e2e(print(2+2)→'4' 인라인) · D4 timeout 강제(무한루프 kill) · E4 network off(외부 접속 실패) + non-root · F4 감사 로그 기록 · 회귀(MVP0~2).
 
+## 8.8 Loop 5 (MVP 4) 확정 설계 — 2026-07-07 착수 (사용자 지시로 계속)
+
+- **Marimo interactive demo (§12)**: 서버 상주 앱 대신 **WASM export 파이프라인** — Author가 marimo .py 소스 등록 → worker가 Docker에서 `marimo export html-wasm` 빌드 → 정적 번들을 Supabase Storage(public bucket)에 업로드 → `interactive-demo` 블록(directive에 app id)이 sandbox iframe으로 임베드. 학생 인터랙션은 브라우저 Pyodide(클라이언트)에서 실행 → 서버 실행 정책과 무충돌. `marimo_apps` 테이블(0005) + 빌드 잡은 기존 worker에 잡 타입 추가.
+- **Focus Lecture Mode (§8.3.2)**: Lecture Mode 안의 토글 — 블록 1개씩 확대 표시, ←/→·클릭 내비게이션, 기존 per-block annotation 레이어 그대로 동작(정규화 좌표라 자연 호환), Esc로 Live Book 복귀. 슬라이드 변환 아님(§8.3.2 원칙).
+- **PDF/ePub export (#8 결정)**: Quarto 미도입. PDF = Reading print CSS + 버튼(보이는 대로 = 역할 안전). **ePub = 서버 생성**(EPUB3, jszip) — 학생 가시 블록만 포함, **instructor-note 서버 단계 제거(§5.6 export 불변식)**.
+- **AI kind 확장(§9/MVP4)**: `animation-code`(matplotlib.animation 코드 생성), `difficulty-adjust`(난이도 변환), `revision-from-annotations`(공개 세션 판서 분포·대상 블록 소스를 컨텍스트로 수정안 생성) — 기존 draft/승인/provenance 파이프라인 재사용.
+- **검증 불변식(Loop 5)**: A5 ePub에 instructor-note 부재(+PDF는 print 경로 역할 안전) · B5 marimo 실빌드→Storage→iframe(sandbox) 임베드 로드 · C5 Focus 내비/키보드/판서 앵커 유지 · D5 신규 3 kind draft 게이트+revision kind의 컨텍스트에 판서 데이터 포함 · 회귀(MVP0~3, DB는 reset 없이 `migration up`으로 보존).
+
 ## 9. 지금 실행할 것
 1. 본 문서 확정(= Fable 5 계획 산출물)
 2. Loop 1 Workflow 실행: S1 스캐폴드 → Supabase 기동 → S2~S4 병렬 구현 → Fable 5 검증 → (실패 시 수정 ≤3) → 커밋

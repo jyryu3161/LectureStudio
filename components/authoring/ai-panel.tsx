@@ -5,13 +5,19 @@ import Link from 'next/link';
 import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { discardArtifactAction, generateArtifactAction } from '@/lib/ai/actions';
 import type { AiArtifact } from '@/lib/ai/artifacts';
 import { ARTIFACT_KINDS } from '@/lib/ai/types';
 import type { ArtifactKind } from '@/lib/ai/types';
 import { cn } from '@/lib/utils';
 
-/** PRD §9.3 — Korean labels for the six artifact kinds shown in the kind selector. */
+/** PRD §9.3 / §9.4 — Korean labels for the artifact kinds shown in the kind selector. */
 const KIND_LABEL: Record<ArtifactKind, string> = {
   outline: '강의 초안',
   'student-explanation': '학생 설명 보강',
@@ -19,6 +25,9 @@ const KIND_LABEL: Record<ArtifactKind, string> = {
   'figure-code': '개념 그림 코드',
   'code-explanation': '코드 설명',
   quiz: '퀴즈 후보',
+  'animation-code': '애니메이션 코드',
+  'difficulty-adjust': '난이도 변환',
+  'revision-from-annotations': '판서 기반 수정안',
 };
 
 const STATUS_LABEL: Record<AiArtifact['status'], string> = {
@@ -241,21 +250,39 @@ export function AiPanel({
           </p>
         )}
 
-        <Button
-          type="button"
-          variant="accent"
-          size="sm"
-          className="w-full"
-          onClick={() => void handleGenerate()}
-          disabled={generating || instruction.trim().length === 0}
-        >
-          {generating ? (
-            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
-          ) : (
-            <Sparkles size={14} aria-hidden="true" />
-          )}
-          생성
-        </Button>
+        {!generating && instruction.trim().length === 0 ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled <button> emits no pointer events, so the tooltip
+                    hangs off this wrapper span instead. */}
+                <span className="inline-flex w-full" tabIndex={0} aria-label="지시문을 입력하세요.">
+                  <Button type="button" variant="accent" size="sm" className="w-full" disabled>
+                    <Sparkles size={14} aria-hidden="true" />
+                    생성
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>지시문을 입력하세요.</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button
+            type="button"
+            variant="accent"
+            size="sm"
+            className="w-full"
+            onClick={() => void handleGenerate()}
+            disabled={generating}
+          >
+            {generating ? (
+              <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+            ) : (
+              <Sparkles size={14} aria-hidden="true" />
+            )}
+            생성
+          </Button>
+        )}
 
         {genError && (
           <div

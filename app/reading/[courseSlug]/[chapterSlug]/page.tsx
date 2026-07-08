@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { ReactElement } from 'react';
 
 import { AnnotationOverlayProvider } from '@/components/reading/annotation-overlay-context';
 import { ReadingAnnotationCanvas } from '@/components/reading/reading-annotation-canvas';
@@ -6,8 +7,10 @@ import { listAnnotations, listPublishedSessions } from '@/lib/annotations';
 import type { AnnotationRow, LectureSessionRow } from '@/lib/annotations/types';
 import { filterByVisibility } from '@/lib/auth/guards';
 import { getCourseRole } from '@/lib/auth/session';
+import { readChapterSource } from '@/lib/chapters/source';
 import { ensureStableIds, type Block } from '@/lib/content';
 import { mystNodesToPlainText, renderBlocks } from '@/lib/render';
+import type { CourseRole } from '@/lib/supabase/roles';
 import { createClient } from '@/lib/supabase/server';
 
 import { ChapterToc, type TocChapter } from './chapter-toc';
@@ -31,18 +34,36 @@ interface ChapterPageParams {
 
 interface ChapterPageData {
   course: { id: string; title: string; subtitle: string | null };
-  chapter: { id: string; title: string; slug: string; order_index: number; source: string };
+  chapter: { id: string; title: string; slug: string; order_index: number };
   chapters: TocChapter[];
+  role: CourseRole | null;
+  headings: OnThisPageItem[];
+  renderedBlocks: ReactElement[];
+  // block id → current content hash, for annotation drift. Carries no block
+  // *text*, so it is safe to serialize into a student's response (unlike the
+  // raw `chapters.source`, which would smuggle instructor-note prose across
+  // the RSC boundary -- see below).
+  blockHashes: Record<string, string>;
 }
 
 /**
- * Loads exactly what this page needs via the request-scoped (RLS-applying)
- * Supabase server client -- never a service-role client -- so a private
- * course or an instructor-only chapter reference is invisible to a
- * non-member the same way it would be to any other API consumer. Returns
- * `null` for "not found OR not allowed to see it"; the two are
- * intentionally indistinguishable to the caller (see the not-found page
- * copy) so this never confirms a private course's existence to a guest.
+ * Loads and fully prepares exactly what this page renders, via the
+ * request-scoped (RLS-applying) Supabase server client -- never a
+ * service-role client -- so a private course or an instructor-only chapter
+ * reference is invisible to a non-member the same way it would be to any
+ * other API consumer. Returns `null` for "not found OR not allowed to see
+ * it"; the two are intentionally indistinguishable to the caller (see the
+ * not-found page copy) so this never confirms a private course's existence
+ * to a guest.
+ *
+ * SECURITY (PRD Sec 5.6 / 15.3): the raw `chapters.source` -- which contains
+ * instructor-note prose -- is parsed, role-filtered, and rendered HERE and
+ * is NEVER returned to the caller. Only the visibility-filtered
+ * `renderedBlocks`, the visible headings, and a text-free block-hash map
+ * leave this function. This keeps instructor-only text out of the RSC flight
+ * payload entirely (in `next dev`, React serializes an async function's
+ * returned value into DEV debug rows; returning `source` would leak the
+ * notes to a student via view-source even though the visible DOM is clean).
  */
 async function loadChapterPageData(
   courseId: string,
@@ -61,11 +82,20 @@ async function loadChapterPageData(
 
   const { data: chapter } = await supabase
     .from('chapters')
-    .select('id, title, slug, order_index, source')
+    .select('id, title, slug, order_index')
     .eq('course_id', course.id)
     .eq('slug', chapterSlug)
     .maybeSingle();
   if (!chapter) return null;
+
+  // The raw `chapters.source` (which carries instructor-note prose) is no longer
+  // REST-readable by the request-scoped client (migration 0007). Read it here via
+  // the elevated helper — the RLS chapter fetch above already proved this viewer
+  // may see the chapter; the source is parsed + role-filtered below and never
+  // leaves this function.
+  const sourceRow = await readChapterSource(chapter.id);
+  if (sourceRow == null) return null;
+  const source = sourceRow.source;
 
   const { data: chapters } = await supabase
     .from('chapters')
@@ -73,7 +103,50 @@ async function loadChapterPageData(
     .eq('course_id', course.id)
     .order('order_index', { ascending: true });
 
-  return { course, chapter, chapters: chapters ?? [] };
+  // Viewer's role on THIS course, looked up via the same request-scoped
+  // (RLS-backed) client -- never assume/pass a role down from anywhere else.
+  const role = await getCourseRole(course.id);
+
+  // Parse the chapter's MyST source into Blocks. `blocks` (which still holds
+  // instructor-only prose) stays a LOCAL here and never becomes part of this
+  // function's returned/awaited value. This never persists back to
+  // `chapters.source`/`content_blocks` (that write-through is the Content
+  // Engine/Authoring path) -- Reading Mode is read-only.
+  const { blocks } = ensureStableIds(source);
+
+  // Derive the "On this page" heading list from the same visibility-filtered
+  // list `renderBlocks` renders from, never from the raw `blocks` array, so an
+  // instructor-only block could never leak into the page via a side channel.
+  const visibleBlocks = filterByVisibility(blocks, role);
+  const headings: OnThisPageItem[] = visibleBlocks
+    .filter((block) => block.blockType === 'heading' && headingDepth(block) >= 2)
+    .map((block) => ({
+      id: block.id,
+      depth: headingDepth(block),
+      text: mystNodesToPlainText(block.node.children) || 'Untitled section',
+    }));
+
+  // `renderBlocks` performs its own server-side visibility filtering
+  // (defense-in-depth), so its output already excludes instructor-only text.
+  const renderedBlocks = await renderBlocks(blocks, { role });
+
+  const blockHashes: Record<string, string> = {};
+  for (const block of blocks) blockHashes[block.id] = block.contentHash;
+
+  return {
+    course,
+    chapter: {
+      id: chapter.id,
+      title: chapter.title,
+      slug: chapter.slug,
+      order_index: chapter.order_index,
+    },
+    chapters: chapters ?? [],
+    role,
+    headings,
+    renderedBlocks,
+    blockHashes,
+  };
 }
 
 /** Heading depth for a Block, preferring the denormalized metadata (see lib/content/blocks.ts). */
@@ -97,14 +170,14 @@ function annotationGroupId(annotation: AnnotationRow): string {
  * multi-block stroke is flagged as a whole. Drift is surfaced as a badge and
  * dimming in the overlay -- never a silent reposition or hide.
  */
-function computeStaleGroupIds(annotations: AnnotationRow[], blocks: Block[]): string[] {
-  const currentHash = new Map<string, string>();
-  for (const block of blocks) currentHash.set(block.id, block.contentHash);
-
+function computeStaleGroupIds(
+  annotations: AnnotationRow[],
+  blockHashes: Record<string, string>,
+): string[] {
   const stale = new Set<string>();
   for (const a of annotations) {
     if (!a.created_against_hash) continue; // nothing to compare against
-    const current = currentHash.get(a.block_id);
+    const current = blockHashes[a.block_id];
     if (current === undefined || current !== a.created_against_hash) {
       stale.add(annotationGroupId(a));
     }
@@ -152,50 +225,22 @@ export default async function ChapterReadingPage({
   const requestedSessionId = Array.isArray(sessionParam) ? sessionParam[0] : sessionParam;
   const data = await loadChapterPageData(courseSlug, chapterSlug);
   if (!data) notFound();
-  const { course, chapter, chapters } = data;
-
-  // Viewer's role on THIS course, looked up via the same request-scoped
-  // client (RLS-backed) -- never assume/pass a role down from anywhere else.
-  const role = await getCourseRole(course.id);
-
-  // Parse the chapter's MyST source server-side into Blocks. This never
-  // persists back to `chapters.source`/`content_blocks` (that write-through
-  // is the Content Engine/Authoring path, see lib/content/db.ts and
-  // scripts/ingest-seed.ts) -- Reading Mode is read-only.
-  const { blocks } = ensureStableIds(chapter.source);
-
-  // SECURITY (PRD §5.6/§15.3): derive the "On this page" heading list from
-  // the same visibility-filtered list `renderBlocks` renders from, never
-  // from the raw `blocks` array, so an instructor-only block could never
-  // leak into this page via a side channel even if a future block type
-  // change made headings privileged. `renderBlocks` itself performs its own
-  // filtering, too (this is intentionally defense-in-depth, not a
-  // substitute for it).
-  const visibleBlocks = filterByVisibility(blocks, role);
-  const headings: OnThisPageItem[] = visibleBlocks
-    .filter((block) => block.blockType === 'heading' && headingDepth(block) >= 2)
-    .map((block) => ({
-      id: block.id,
-      depth: headingDepth(block),
-      text: mystNodesToPlainText(block.node.children) || 'Untitled section',
-    }));
-
-  const renderedBlocks = await renderBlocks(blocks, { role });
+  const { course, chapter, chapters, headings, renderedBlocks, blockHashes } = data;
 
   // Lecture-annotation overlay (PRD §7.3/§8.9). Loaded via the same
   // request-scoped RLS client -- students/guests only ever receive published
   // sessions + their annotations. Drift is computed against the freshly parsed
-  // blocks so a changed block flags (not silently moves) its ink.
+  // block hashes so a changed block flags (not silently moves) its ink.
   const { sessions, selectedSessionId, annotations } = await loadSessionOverlay(
     chapter.id,
     requestedSessionId,
   );
-  const staleGroupIds = computeStaleGroupIds(annotations, blocks);
+  const staleGroupIds = computeStaleGroupIds(annotations, blockHashes);
 
   return (
     <AnnotationOverlayProvider defaultVisible>
       <div className="flex min-h-full flex-col lg:h-full">
-        <ReadingTopBar courseCode={course.subtitle} courseTitle={course.title} />
+        <ReadingTopBar courseCode={course.subtitle} courseTitle={course.title} chapterId={chapter.id} />
 
         <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row lg:overflow-hidden">
         {/* Course TOC -- collapsible on mobile/tablet, persistent rail on desktop. */}

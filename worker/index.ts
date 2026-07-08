@@ -11,6 +11,7 @@
  * Uses the service-role client (bypasses RLS) — the trusted server-side path.
  */
 import { processBuild } from './build';
+import { processDemoBuild } from './demo';
 import { processExecution } from './execute';
 import { getWorkerEnv } from './env';
 import { createWorkerClient, type WorkerClient } from './supabase';
@@ -22,6 +23,7 @@ let running = true;
 // orphans to 'failed' on startup and periodically so they don't hang around.
 const STALE_EXEC_MS = 10 * 60 * 1000; // executions 'running' longer than this
 const STALE_BUILD_MS = 30 * 60 * 1000; // builds 'running' longer than this
+const STALE_DEMO_MS = 20 * 60 * 1000; // demo builds 'building' longer than this
 const SWEEP_INTERVAL_MS = 60 * 1000; // sweep at most once a minute in the loop
 
 function sleep(ms: number): Promise<void> {
@@ -38,6 +40,7 @@ async function sweepStaleJobs(supabase: WorkerClient): Promise<void> {
   const nowIso = now.toISOString();
   const execCutoff = new Date(now.getTime() - STALE_EXEC_MS).toISOString();
   const buildCutoff = new Date(now.getTime() - STALE_BUILD_MS).toISOString();
+  const demoCutoff = new Date(now.getTime() - STALE_DEMO_MS).toISOString();
 
   // Executions: claimed (claim_execution flips to 'running') but never
   // finished. created_at is the claim proxy (the worker sets no claimed_at).
@@ -72,6 +75,27 @@ async function sweepStaleJobs(supabase: WorkerClient): Promise<void> {
     }
     console.log(`[worker] swept ${builds.length} stale build(s) → failed (worker lost)`);
   }
+
+  // Marimo demo builds: claim_marimo_build touches updated_at when it flips to
+  // in-flight; a demo stuck 'building' with no bundle past the cutoff is an
+  // orphan. Append the marker per row (same reason as runtime_builds above).
+  const { data: demos, error: demoErr } = await supabase
+    .from('marimo_apps')
+    .select('id, log')
+    .eq('status', 'building')
+    .is('bundle_path', null)
+    .lt('updated_at', demoCutoff);
+  if (demoErr) {
+    console.error('[worker] stale-demo sweep error:', demoErr.message);
+  } else if (demos && demos.length > 0) {
+    for (const demo of demos) {
+      await supabase
+        .from('marimo_apps')
+        .update({ status: 'failed', log: `${demo.log}\n[worker lost]` })
+        .eq('id', demo.id);
+    }
+    console.log(`[worker] swept ${demos.length} stale demo build(s) → failed (worker lost)`);
+  }
 }
 
 /** Do one unit of work. Returns true if a job was processed (skip the poll delay). */
@@ -89,6 +113,14 @@ async function tick(supabase: WorkerClient): Promise<boolean> {
     console.error('[worker] claim_execution error:', execErr.message);
   } else if (execs && execs.length > 0) {
     await processExecution(supabase, execs[0]);
+    return true;
+  }
+
+  const { data: demos, error: demoErr } = await supabase.rpc('claim_marimo_build');
+  if (demoErr) {
+    console.error('[worker] claim_marimo_build error:', demoErr.message);
+  } else if (demos && demos.length > 0) {
+    await processDemoBuild(supabase, demos[0]);
     return true;
   }
 

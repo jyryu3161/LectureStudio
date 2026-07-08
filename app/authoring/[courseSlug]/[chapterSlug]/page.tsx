@@ -6,8 +6,11 @@ import { renderChapterPreview } from '@/app/authoring/preview-action';
 import { AuthoringStudio } from '@/components/authoring/authoring-studio';
 import type { PreviewResult } from '@/components/authoring/types';
 import { listArtifacts, type AiArtifact } from '@/lib/ai/artifacts';
+import { listDemoApps } from '@/lib/demos/actions';
+import type { DemoApp } from '@/lib/demos/types';
 import { canEditCourse } from '@/lib/auth/guards';
 import { getCourseRole, getCurrentUser } from '@/lib/auth/session';
+import { readChapterSource } from '@/lib/chapters/source';
 import { createClient } from '@/lib/supabase/server';
 
 import { reloadChapterSource, saveChapterSource } from './actions';
@@ -52,7 +55,7 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
 
   const { data: chapter, error: chapterError } = await supabase
     .from('chapters')
-    .select('id, title, slug, source, version_id')
+    .select('id, title, slug, version_id')
     .eq('course_id', courseId)
     .eq('slug', chapterSlug)
     .maybeSingle();
@@ -66,9 +69,15 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
     return <ForbiddenNotice courseTitle={course.title} />;
   }
 
+  // `chapters.source` is no longer REST-readable (migration 0007). This is the
+  // author's editor, and the canEditCourse gate above already authorized them,
+  // so read the full source (instructor notes included — authors may see them)
+  // via the elevated helper.
+  const source = (await readChapterSource(chapter.id))?.source ?? '';
+
   let initialPreview: PreviewResult;
   try {
-    initialPreview = await buildPreview(chapter.source);
+    initialPreview = await buildPreview(source);
   } catch (error) {
     // Never let a render hiccup take down the whole editor page -- fall
     // back to an empty preview with the failure surfaced as a warning; the
@@ -100,6 +109,17 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
     console.error('[authoring] failed to list AI artifacts:', error);
   }
 
+  // Course marimo demos. Never let a listing hiccup take down the editor —
+  // fall back to an empty list (the panel can still create + build).
+  let initialDemos: DemoApp[] = [];
+  try {
+    const demosResult = await listDemoApps(courseId);
+    if (demosResult.ok) initialDemos = demosResult.data;
+    else console.error('[authoring] failed to list demos:', demosResult.error);
+  } catch (error) {
+    console.error('[authoring] failed to list demos:', error);
+  }
+
   return (
     <AuthoringStudio
       course={{ id: course.id, title: course.title }}
@@ -110,12 +130,13 @@ export default async function AuthoringChapterPage({ params }: AuthoringChapterP
         courseId,
         versionId: chapter.version_id,
       }}
-      initialSource={chapter.source}
+      initialSource={source}
       initialPreview={initialPreview}
       onSave={saveChapterSource}
       onPreview={renderChapterPreview}
       onReloadSource={reloadChapterSource}
       initialArtifacts={initialArtifacts}
+      initialDemos={initialDemos}
       currentUserId={user.id}
     />
   );

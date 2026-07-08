@@ -1,19 +1,29 @@
+import { ReadingExportActions } from './reading-export-actions';
+
 /**
  * Reading Mode top bar (design.zip reading mockup): course code + title on
- * the left, a KO/EN language toggle on the right. The language toggle is a
- * static placeholder only -- there is no i18n content pipeline yet, so it
- * must not claim EN actually works. Pure presentational server component
- * (no state, no client JS needed).
+ * the left; export actions (PDF / ePub) + a KO/EN language toggle on the
+ * right. The language toggle is a static placeholder only -- there is no i18n
+ * content pipeline yet, so it must not claim EN actually works. The export
+ * controls are a small client island; the rest stays a server component.
+ *
+ * `data-reading-topbar` is the hook the print stylesheet uses to hide this bar
+ * (along with the app rail and side rails) when printing to PDF.
  */
 export function ReadingTopBar({
   courseCode,
   courseTitle,
+  chapterId,
 }: {
   courseCode: string | null;
   courseTitle: string;
+  chapterId: string;
 }) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle bg-paper/70 px-5 py-3.5 backdrop-blur-sm lg:px-7">
+    <header
+      data-reading-topbar
+      className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle bg-paper/70 px-5 py-3.5 backdrop-blur-sm lg:px-7"
+    >
       <div className="flex min-w-0 items-baseline gap-2">
         {courseCode ? (
           <span className="font-mono text-[13px] font-semibold tracking-tight text-ink">
@@ -28,7 +38,10 @@ export function ReadingTopBar({
         <span className="truncate text-[13px] text-muted-foreground">{courseTitle}</span>
       </div>
 
-      <div
+      <div className="flex flex-wrap items-center gap-3">
+        <ReadingExportActions chapterId={chapterId} />
+
+        <div
         role="group"
         aria-label="Reading language"
         aria-disabled="true"
@@ -37,6 +50,7 @@ export function ReadingTopBar({
       >
         <span className="rounded-full bg-ink px-2.5 py-1 text-white">한국어</span>
         <span className="cursor-not-allowed px-2.5 py-1">EN</span>
+        </div>
       </div>
     </header>
   );
