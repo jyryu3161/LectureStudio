@@ -44,3 +44,9 @@ next-env.d.ts
 # tool state
 .bkit/
 .playwright-mcp/
+
+# stray agent/test artifacts
+*.snapshot.yml
+blocks-tab.yml
+net-cdn.txt
+/tmp-verify-*
